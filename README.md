@@ -2,6 +2,8 @@
 
 **Live market dashboard and portfolio risk analytics for Indian equities**
 
+🔗 **Live demo: [nain-capital-analytics.streamlit.app](https://nain-capital-analytics.streamlit.app)**
+
 A Python + SQL project with two parts:
 
 1. **A live website** (Streamlit) showing India's 10 largest listed companies, the NIFTY 50, gold and silver prices in rupees, and the latest market news. It refreshes itself every 60 seconds.
