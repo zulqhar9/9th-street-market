@@ -16,6 +16,10 @@ h1 { line-height: 1.08; }
 }
 [data-testid="stMetricLabel"] p { color: #6E6E73; font-weight: 500; }
 
+/* Responsive columns: wrap to two (then one) per row instead of squeezing the numbers */
+[data-testid="stHorizontalBlock"] { flex-wrap: wrap; row-gap: 1rem; }
+[data-testid="stHorizontalBlock"] > [data-testid="stColumn"] { min-width: min(100%, 13.5rem); }
+
 /* Tables, charts and forms sit on white cards too */
 [data-testid="stDataFrame"], [data-testid="stPlotlyChart"], [data-testid="stForm"] {
     background: #FFFFFF;
