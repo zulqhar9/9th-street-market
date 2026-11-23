@@ -1,20 +1,30 @@
-"""Interactive Plotly charts for the website. Colours match the PNG report charts."""
+"""Interactive Plotly charts for the website, styled to match the site theme (.streamlit/config.toml)."""
 from __future__ import annotations
 
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-PRIMARY = "#1F6FB2"
-MUTED = "#9AA5B1"
-GAIN = "#2E8B57"
-LOSS = "#C8553D"
-STOCK = "#3B4A5A"
+PRIMARY = "#0071E3"   # accent blue
+MUTED = "#AEAEB2"     # benchmark grey
+GAIN = "#248A3D"
+LOSS = "#D70015"
+STOCK = "#1D1D1F"
+TEXT_2 = "#6E6E73"
+GRID = "#EDEDF0"
+FONT = "-apple-system, BlinkMacSystemFont, Inter, Segoe UI, sans-serif"
 
 
 def _layout(fig: go.Figure, height: int = 360, pct_y: bool = False) -> go.Figure:
-    fig.update_layout(height=height, margin=dict(l=10, r=10, t=30, b=10),
-                      legend=dict(orientation="h", y=1.08, x=0), hovermode="x unified")
+    fig.update_layout(
+        height=height, margin=dict(l=8, r=8, t=28, b=8),
+        legend=dict(orientation="h", y=1.1, x=0, font=dict(color=TEXT_2)),
+        hovermode="x unified", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family=FONT, size=13, color=STOCK),
+        hoverlabel=dict(bgcolor="#FFFFFF", bordercolor=GRID, font=dict(family=FONT, color=STOCK)),
+    )
+    fig.update_xaxes(showgrid=False, linecolor=GRID, tickfont=dict(color=TEXT_2))
+    fig.update_yaxes(gridcolor=GRID, zeroline=False, linecolor=GRID, tickfont=dict(color=TEXT_2))
     if pct_y:
         fig.update_yaxes(tickformat=".0%")
     return fig
@@ -34,7 +44,7 @@ def change_bars(changes: pd.Series) -> go.Figure:
                            marker_color=[GAIN if v >= 0 else LOSS for v in s],
                            text=[f"{v:+.2%}" for v in s], textposition="outside",
                            hovertemplate="%{y}: %{x:+.2%}<extra></extra>"))
-    fig.update_xaxes(tickformat=".1%", zeroline=True, zerolinecolor="#888")
+    fig.update_xaxes(tickformat=".1%", zeroline=True, zerolinecolor="#C7C7CC")
     fig.update_layout(hovermode="closest")
     return _layout(fig, height=380)
 
@@ -54,13 +64,13 @@ def growth(portfolio: pd.Series, benchmark: pd.Series, bench_name: str) -> go.Fi
         go.Scatter(x=portfolio.index, y=portfolio, name="Portfolio", line=dict(color=PRIMARY, width=2.5)),
         go.Scatter(x=bench.index, y=bench, name=bench_name, line=dict(color=MUTED, width=2)),
     ])
-    fig.add_hline(y=1, line_color="#888", line_width=1)
+    fig.add_hline(y=1, line_color="#C7C7CC", line_width=1)
     fig.update_yaxes(title="Value of ₹1 invested", tickprefix="₹")
     return _layout(fig, height=400)
 
 
 def drawdown(dd: pd.Series) -> go.Figure:
-    fig = go.Figure(go.Scatter(x=dd.index, y=dd, fill="tozeroy", line=dict(color=LOSS, width=1),
+    fig = go.Figure(go.Scatter(x=dd.index, y=dd, fill="tozeroy", fillcolor="rgba(215,0,21,0.12)", line=dict(color=LOSS, width=1.5),
                                name="Drawdown"))
     return _layout(fig, height=260, pct_y=True)
 
@@ -83,7 +93,7 @@ def risk_return(table: pd.DataFrame) -> go.Figure:
         x=table["volatility"], y=table["cagr"], mode="markers", text=table.index,
         marker=dict(color=[colors[k] for k in table["kind"]], size=[sizes[k] for k in table["kind"]]),
         hovertemplate="<b>%{text}</b><br>Risk %{x:.1%}<br>Return %{y:.1%} a year<extra></extra>"))
-    fig.add_hline(y=0, line_color="#888", line_width=1)
+    fig.add_hline(y=0, line_color="#C7C7CC", line_width=1)
     fig.update_xaxes(title="Annual volatility (risk)", tickformat=".0%")
     fig.update_yaxes(title="Annual return (CAGR)", tickformat=".0%")
     fig.update_layout(hovermode="closest")
@@ -92,6 +102,6 @@ def risk_return(table: pd.DataFrame) -> go.Figure:
 
 def correlation(returns: pd.DataFrame) -> go.Figure:
     corr = returns.corr().round(2)
-    fig = px.imshow(corr, text_auto=True, color_continuous_scale="Blues", zmin=0, zmax=1, aspect="auto")
+    fig = px.imshow(corr, text_auto=True, color_continuous_scale=[[0, "#F5F9FF"], [1, PRIMARY]], zmin=0, zmax=1, aspect="auto")
     fig.update_layout(hovermode="closest")
     return _layout(fig, height=max(360, 40 * len(corr) + 120))

@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from analyser import live
-from webapp import plots
+from webapp import plots, style
 
 REFRESH_SECONDS = 60
 NEWS_REFRESH_SECONDS = 30 * 60
@@ -41,9 +41,12 @@ def time_ago(ts: pd.Timestamp) -> str:
     return ts.tz_convert(live.IST).strftime("%d %b")
 
 
-st.title("Nain Capital Analytics")
-st.caption("A live view of India's 10 largest listed companies, gold and silver, with the latest market news. "
-           "Prices from Yahoo Finance, delayed about 15 minutes. For information only, not investment advice.")
+style.header(
+    "Live markets · India",
+    "Nain Capital Analytics",
+    "India's 10 largest listed companies, gold and silver, and the latest market news, in one place. "
+    "Prices from Yahoo Finance, delayed about 15 minutes. For information only, not investment advice.",
+)
 
 
 @st.fragment(run_every=REFRESH_SECONDS)
@@ -82,7 +85,7 @@ def live_panel() -> None:
     })
     styled = table.style.map(lambda v: f"color: {plots.GAIN if v >= 0 else plots.LOSS}",
                              subset=["Change (₹)", "Change"])
-    st.dataframe(styled, hide_index=True, use_container_width=True, height=36 * (len(table) + 1) + 4,
+    st.dataframe(styled, hide_index=True, use_container_width=True, height=35 * (len(table) + 1) + 3,
                  column_config={
                      "Price (₹)": st.column_config.NumberColumn(format="₹%.2f"),
                      "Change (₹)": st.column_config.NumberColumn(format="%+.2f"),

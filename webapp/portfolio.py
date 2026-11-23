@@ -6,7 +6,7 @@ import streamlit as st
 
 from analyser import BENCHMARK, BENCHMARK_NAME, analysis, db, metrics
 from analyser.fetch import download_prices
-from webapp import plots
+from webapp import plots, style
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -32,10 +32,13 @@ def clean(edited: pd.DataFrame) -> pd.DataFrame:
     return h.reset_index(drop=True)
 
 
-st.title("Portfolio Analyser")
-st.write("How has a portfolio really performed against the NIFTY 50, and how much risk did it take? "
-         "The sample holds ₹10,000 in each of today's 10 largest NSE companies from January 2021. "
-         "Edit the table to try your own stocks (NSE tickers end in **.NS**). Nothing you enter is saved.")
+style.header(
+    "Portfolio analytics",
+    "Portfolio Analyser",
+    "How has a portfolio really performed against the NIFTY 50, and how much risk did it take? "
+    "The sample holds ₹10,000 in each of today's 10 largest NSE companies from January 2021. "
+    "Edit the table to try your own stocks (NSE tickers end in .NS). Nothing you enter is saved.",
+)
 
 with st.form("holdings"):
     edited = st.data_editor(
@@ -80,12 +83,13 @@ port, bench = result.table.loc["Portfolio"], result.table.loc[BENCHMARK_NAME]
 cost, value = result.positions["cost"].sum(), result.positions["market_value"].sum()
 
 m1, m2, m3, m4 = st.columns(4)
-m1.metric("Invested → now", f"₹{value:,.0f}", f"{value / cost - 1:+.1%} on ₹{cost:,.0f}", border=True)
+m1.metric("Portfolio value", f"₹{value:,.0f}", f"{value / cost - 1:+.1%}", border=True,
+          help=f"₹{cost:,.0f} invested, now worth ₹{value:,.0f}.")
 m2.metric("Annual return", f"{port.cagr:+.1%}", f"{port.cagr - bench.cagr:+.1%} vs {BENCHMARK_NAME}", border=True)
-m3.metric("Worst fall from peak", f"{port.max_drawdown:.1%}",
-          f"{BENCHMARK_NAME}: {bench.max_drawdown:.1%}", delta_color="off", border=True)
+m3.metric("Worst fall from peak", f"{port.max_drawdown:.1%}", f"{BENCHMARK_NAME}: {bench.max_drawdown:.1%}",
+          delta_color="off", delta_arrow="off", border=True)
 m4.metric("Sharpe ratio", f"{port.sharpe:.2f}", f"{BENCHMARK_NAME}: {bench.sharpe:.2f}",
-          delta_color="off", border=True)
+          delta_color="off", delta_arrow="off", border=True)
 
 st.subheader(f"Growth of ₹1: portfolio vs {BENCHMARK_NAME}")
 st.plotly_chart(plots.growth(result.portfolio, result.close[BENCHMARK], BENCHMARK_NAME), use_container_width=True)

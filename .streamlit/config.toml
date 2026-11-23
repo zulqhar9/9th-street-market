@@ -1,8 +1,39 @@
+# Clean, minimal look: light grey canvas, white rounded cards, system font, one blue accent.
 [theme]
-primaryColor = "#1F6FB2"
+base = "light"
+primaryColor = "#0071E3"
+backgroundColor = "#F5F5F7"
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#1D1D1F"
+linkColor = "#0066CC"
+linkUnderline = false
+blueColor = "#0071E3"
+greenColor = "#248A3D"
+redColor = "#D70015"
+grayColor = "#86868B"
+font = "-apple-system, BlinkMacSystemFont, Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap, sans-serif"
+baseFontSize = 15
+headingFontWeights = [700, 650, 600]
+headingFontSizes = ["2.75rem", "1.6rem", "1.25rem"]
+metricValueFontWeight = 600
+metricValueFontSize = "1.9rem"
+baseRadius = "large"
+buttonRadius = "full"
+borderColor = "#E5E5EA"
+dataframeBorderColor = "#EDEDF0"
+dataframeHeaderBackgroundColor = "#FBFBFD"
+showSidebarBorder = true
+chartCategoricalColors = ["#0071E3", "#86868B", "#248A3D", "#D70015", "#BF5AF2", "#FF9F0A"]
+
+[theme.sidebar]
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F5F5F7"
 
 [server]
 headless = true
 
 [browser]
 gatherUsageStats = false
+
+[client]
+toolbarMode = "viewer"
