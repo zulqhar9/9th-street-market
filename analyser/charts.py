@@ -78,10 +78,16 @@ def risk_return(metrics: pd.DataFrame, out_dir: Path) -> Path:
         "benchmark": (BENCHMARK_COLOR, 120),
         "stock": ("#3B4A5A", 60),
     }
-    for label, row in metrics.iterrows():
+    placed: list[tuple[float, float, int]] = []
+    for label, row in metrics.sort_values("cagr", ascending=False).iterrows():
+        x, y = row["volatility"], row["cagr"]
         color, size = style[row["kind"]]
-        ax.scatter(row["volatility"], row["cagr"], s=size, color=color, zorder=3)
-        ax.annotate(label, (row["volatility"], row["cagr"]), textcoords="offset points", xytext=(6, 4))
+        ax.scatter(x, y, s=size, color=color, zorder=3)
+        # Flip the label below the point when a nearby point already has its label above.
+        crowded = any(abs(x - px) < 0.025 and abs(y - py) < 0.02 and pdy > 0 for px, py, pdy in placed)
+        dy = -13 if crowded else 4
+        placed.append((x, y, dy))
+        ax.annotate(label, (x, y), textcoords="offset points", xytext=(6, dy), fontsize=9)
     ax.axhline(0, color="#444", lw=0.8)
     ax.xaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
@@ -93,7 +99,9 @@ def risk_return(metrics: pd.DataFrame, out_dir: Path) -> Path:
 
 def correlation(returns: pd.DataFrame, out_dir: Path) -> Path:
     corr = returns.corr()
-    fig, ax = plt.subplots(figsize=(6.5, 5.5))
+    n = len(corr)
+    fig, ax = plt.subplots(figsize=(max(6.5, 0.8 * n + 1.5), max(5.5, 0.7 * n + 1)))
+    cell_font = 10 if n <= 6 else 8
     im = ax.imshow(corr, cmap="Blues", vmin=0, vmax=1)
     ax.set_xticks(range(len(corr)), corr.columns, rotation=45, ha="right")
     ax.set_yticks(range(len(corr)), corr.index)
@@ -101,7 +109,8 @@ def correlation(returns: pd.DataFrame, out_dir: Path) -> Path:
     for i in range(len(corr)):
         for j in range(len(corr)):
             v = corr.iat[i, j]
-            ax.text(j, i, f"{v:.2f}", ha="center", va="center", color="white" if v > 0.6 else "#222")
+            ax.text(j, i, f"{v:.2f}", ha="center", va="center", fontsize=cell_font,
+                    color="white" if v > 0.6 else "#222")
     fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
     ax.set_title("Correlation of daily returns")
     return _save(fig, out_dir, "correlation.png")

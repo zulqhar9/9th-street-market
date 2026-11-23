@@ -1,6 +1,11 @@
 ticker,name,shares,buy_date
-RELIANCE.NS,Reliance Industries,10,2021-01-04
-TCS.NS,Tata Consultancy Services,5,2021-01-04
-HDFCBANK.NS,HDFC Bank,12,2021-06-01
-INFY.NS,Infosys,15,2022-01-03
-ITC.NS,ITC,40,2022-06-01
+RELIANCE.NS,Reliance Industries,11,2021-01-04
+BHARTIARTL.NS,Bharti Airtel,20,2021-01-04
+HDFCBANK.NS,HDFC Bank,15,2021-01-04
+ICICIBANK.NS,ICICI Bank,20,2021-01-04
+SBIN.NS,State Bank of India,39,2021-01-04
+TCS.NS,Tata Consultancy Services,4,2021-01-04
+BAJFINANCE.NS,Bajaj Finance,20,2021-01-04
+LT.NS,Larsen & Toubro,8,2021-01-04
+KOTAKBANK.NS,Kotak Mahindra Bank,26,2021-01-04
+HINDUNILVR.NS,Hindustan Unilever,5,2021-01-04

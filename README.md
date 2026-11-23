@@ -17,18 +17,19 @@ It downloads daily prices, stores them in a SQLite database, calculates standard
 
 ## Example results
 
-On the sample portfolio in `portfolio.csv` (five large-cap NSE stocks bought between 2021 and 2022, prices to Nov 2026):
+The sample portfolio in `portfolio.csv` puts about ₹10,000 into each of the **10 largest NSE companies by market value (as of Nov 2026)**, all bought on 4 Jan 2021. Prices to Nov 2026:
 
 | | Annual return | Volatility | Max drawdown | Sharpe |
 |---|---|---|---|---|
-| Portfolio | +1.6% | 16.3% | -39.0% | -0.21 |
-| NIFTY 50 | +10.5% | 14.2% | -17.2% | 0.35 |
+| Portfolio | +15.3% | 15.3% | -16.5% | 0.61 |
+| NIFTY 50 | +10.5% | 14.2% | -17.2% | 0.34 |
 
 What the analysis shows:
 
-- **The portfolio underperformed the index by about 9% a year**, with more risk (higher volatility and more than double the drawdown).
-- **The two IT stocks drove it.** Infosys (-32%) and TCS (-5%) were the biggest losers, and their daily returns are highly correlated (0.72). The portfolio was less diversified than five stocks suggests.
-- **Infosys is the largest position by value despite its loss**, because it was the biggest purchase. Position sizing mattered more than stock count.
+- **₹1.01 lakh grew to ₹2.34 lakh (+131%)**, beating the index by about 5% a year with similar risk and a slightly smaller worst fall.
+- **Returns were very uneven.** SBI (+346%) and Bharti Airtel (+334%) did most of the work, while TCS and Hindustan Unilever lost money over almost six years.
+- **Banks move together.** HDFC, ICICI, SBI and Kotak have daily-return correlations around 0.4–0.55, so four "different" stocks behave partly like one bet. TCS and Hindustan Unilever, with correlations near 0.2, did the most for diversification.
+- **Caution: survivorship bias.** These are *today's* top 10, picked with hindsight. SBI and Bharti Airtel are in the list partly *because* they rose so much, so the result flatters the strategy. A fair test would use the top 10 as they stood in January 2021.
 
 | Risk vs return | Correlation |
 |---|---|
@@ -56,7 +57,7 @@ Yahoo Finance ──► SQLite (prices) ──────────►sql/mon
 
 ### Method notes
 
-- **Time-weighted returns.** Buying a new stock adds money but isn't a gain. The portfolio index only uses holdings owned the day before, so later purchases don't distort performance. This is why the time-weighted return (+9.5% total) differs from the simple invested-vs-value figure (+0.7%): the largest purchase (Infosys) came later and fell.
+- **Time-weighted returns.** Buying a new stock adds money but isn't a gain. The portfolio index only uses holdings owned the day before, so stocks bought on different dates don't distort performance.
 - **Risk-free rate.** The Sharpe ratio assumes 6.5% a year, roughly an Indian government bond yield. Change it with `--risk-free`.
 - **Buy price** is the adjusted close on the first trading day on or after each buy date.
 
