@@ -16,9 +16,14 @@ h1 { line-height: 1.08; }
 }
 [data-testid="stMetricLabel"] p { color: #6E6E73; font-weight: 500; }
 
-/* Responsive columns: wrap to two (then one) per row instead of squeezing the numbers */
-[data-testid="stHorizontalBlock"] { flex-wrap: wrap; row-gap: 1rem; }
-[data-testid="stHorizontalBlock"] > [data-testid="stColumn"] { min-width: min(100%, 13.5rem); }
+/* Responsive columns: 4 across, then a 2x2 grid, then 1 per row (never an odd 3 + 1) */
+[data-testid="stHorizontalBlock"] { flex-wrap: wrap; row-gap: 1rem; container-type: inline-size; }
+@container (max-width: 50rem) {
+    [data-testid="stColumn"] { min-width: calc(50% - 0.5rem) !important; }
+}
+@container (max-width: 26rem) {
+    [data-testid="stColumn"] { min-width: 100% !important; }
+}
 
 /* Tables, charts and forms sit on white cards too */
 [data-testid="stDataFrame"], [data-testid="stPlotlyChart"], [data-testid="stForm"] {
