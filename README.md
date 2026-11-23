@@ -1,4 +1,6 @@
-# Stock Portfolio Analyser
+# Nain Capital Analytics
+
+**Portfolio risk and return analytics for Indian equities**
 
 A Python + SQL tool that measures how a portfolio of Indian (NSE) stocks has really performed, and how much risk it took to get there, compared with the NIFTY 50 index.
 

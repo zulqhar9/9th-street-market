@@ -1,4 +1,4 @@
-"""Stock Portfolio Analyser.
+"""Nain Capital Analytics: portfolio risk and return analytics for Indian equities.
 
 Usage:
     python main.py                      # download latest prices and build the report
