@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from analyser import BENCHMARK, BENCHMARK_NAME, charts, db, metrics
+from analyser import BENCHMARK, BENCHMARK_NAME, analysis, charts, db, metrics
 from analyser.report import write_report
 
 ROOT = Path(__file__).resolve().parent
@@ -57,35 +57,19 @@ def main() -> None:
         if missing:
             print(f"Warning: no data for {', '.join(sorted(missing))}. Check the ticker symbols.")
 
-    close = db.load_close_prices(conn)
-    if BENCHMARK not in close:
-        sys.exit("No benchmark prices stored yet. Run once without --offline.")
-    positions = db.query(conn, "positions")
-    holdings = holdings[holdings["ticker"].isin(positions["ticker"])]
-    if holdings.empty:
-        sys.exit("No price data for any holding. Run once without --offline.")
-
-    names = holdings.set_index("ticker")["name"]
-    market = close[BENCHMARK]
-    portfolio = metrics.portfolio_index(close, holdings)
-
-    rows = {"Portfolio": {**metrics.summarise(portfolio, market, args.risk_free), "kind": "portfolio"}}
-    rows[BENCHMARK_NAME] = {
-        **metrics.summarise(market.loc[portfolio.index[0]:], market, args.risk_free), "kind": "benchmark"
-    }
-    for h in holdings.itertuples():
-        series = close[h.ticker].loc[h.buy_date:]
-        rows[names[h.ticker]] = {**metrics.summarise(series, market, args.risk_free), "kind": "stock"}
-    table = pd.DataFrame.from_dict(rows, orient="index")
+    try:
+        result = analysis.run(conn, holdings, args.risk_free)
+    except ValueError as err:
+        sys.exit(f"{err} Run once without --offline.")
+    positions, table, portfolio = result.positions, result.table, result.portfolio
 
     args.out.mkdir(parents=True, exist_ok=True)
-    stock_returns = close[holdings["ticker"]].loc[portfolio.index[0]:].pct_change().rename(columns=names)
     chart_files = [
-        charts.growth_vs_benchmark(portfolio, market, BENCHMARK_NAME, args.out),
+        charts.growth_vs_benchmark(portfolio, result.close[BENCHMARK], BENCHMARK_NAME, args.out),
         charts.drawdown_chart(metrics.drawdown(portfolio), args.out),
         charts.allocation(positions, args.out),
         charts.risk_return(table, args.out),
-        charts.correlation(stock_returns, args.out),
+        charts.correlation(result.stock_returns, args.out),
     ]
     monthly = db.query(conn, "monthly_returns")
     monthly.to_csv(args.out / "monthly_returns.csv", index=False)

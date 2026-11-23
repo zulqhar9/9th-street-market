@@ -1,10 +1,26 @@
 # Nain Capital Analytics
 
-**Portfolio risk and return analytics for Indian equities**
+**Live market dashboard and portfolio risk analytics for Indian equities**
 
-A Python + SQL tool that measures how a portfolio of Indian (NSE) stocks has really performed, and how much risk it took to get there, compared with the NIFTY 50 index.
+A Python + SQL project with two parts:
 
-It downloads daily prices, stores them in a SQLite database, calculates standard risk and return measures, and produces a report with charts.
+1. **A live website** (Streamlit) showing India's 10 largest listed companies, the NIFTY 50, gold and silver prices in rupees, and the latest market news. It refreshes itself every 60 seconds.
+2. **A portfolio analyser** that measures how a portfolio of NSE stocks has really performed, and how much risk it took, compared with the NIFTY 50. It runs as a page on the website and as a command-line report.
+
+## The website
+
+| Market Dashboard | Portfolio Analyser |
+|---|---|
+| Top 10 NSE companies: price, today's change and an intraday sparkline | Edit the holdings table (any NSE tickers) and analyse it instantly |
+| NIFTY 50 headline and intraday chart, with a market open/closed indicator | Return vs NIFTY 50, worst fall, Sharpe ratio and beta |
+| Gold (₹ per 10 g) and silver (₹ per kg), converted from international prices | Interactive growth, drawdown, risk-vs-return, allocation and correlation charts |
+| Market news headlines for the top 10, linking to the original publishers | Holdings and per-stock risk tables |
+
+| What | Refreshes | Note |
+|---|---|---|
+| Stocks and NIFTY 50 | every 60 s | Yahoo Finance, about 15 min delayed |
+| Gold, silver, US$/₹ | every 60 s (cached 5 min) | International COMEX prices; Indian retail prices add duty and GST |
+| News | every 30 min | Headlines only, linked to the source |
 
 ![Growth of 1 rupee: portfolio vs NIFTY 50](reports/growth_vs_benchmark.png)
 
@@ -15,7 +31,7 @@ It downloads daily prices, stores them in a SQLite database, calculates standard
 - **Was the return worth the risk?** Sharpe ratio, and beta to the market.
 - **Am I really diversified?** Correlation between holdings and allocation by value.
 
-## Example results
+## Example portfolio results
 
 The sample portfolio in `portfolio.csv` puts about ₹10,000 into each of the **10 largest NSE companies by market value (as of Nov 2026)**, all bought on 4 Jan 2021. Prices to Nov 2026:
 
@@ -47,6 +63,9 @@ Yahoo Finance ──► SQLite (prices) ──────────►sql/mon
 
 | Part | What it does |
 |---|---|
+| `app.py`, `webapp/` | The Streamlit website: dashboard page, portfolio page and Plotly charts |
+| `analyser/live.py` | Live quotes, intraday prices, gold/silver in rupees, news headlines, NSE market hours |
+| `analyser/analysis.py` | One analysis pipeline shared by the website and the command-line report |
 | `analyser/fetch.py` | Downloads split- and dividend-adjusted daily closes with `yfinance` |
 | `sql/schema.sql` | `prices` and `holdings` tables |
 | `sql/positions.sql` | Buy price, latest price and gain per holding, using a correlated subquery and `ROW_NUMBER()` |
@@ -70,6 +89,7 @@ python -m venv .venv
 .venv\Scripts\activate          # Windows  (macOS/Linux: source .venv/bin/activate)
 pip install -r requirements.txt
 
+streamlit run app.py            # start the website at http://localhost:8501
 python main.py                  # download prices and build the report
 python main.py --offline        # rebuild from stored prices, no download
 python -m unittest discover tests
@@ -86,7 +106,7 @@ NSE tickers end in `.NS` (BSE: `.BO`). Output goes to `reports/`.
 
 ## Tech
 
-Python · pandas · SQLite (window functions, CTEs) · matplotlib · yfinance · unittest
+Python · pandas · SQLite (window functions, CTEs) · Streamlit · Plotly · matplotlib · yfinance · unittest
 
 ---
 
