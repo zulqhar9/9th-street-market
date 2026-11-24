@@ -51,14 +51,16 @@ style.header(
 
 @st.fragment(run_every=REFRESH_SECONDS)
 def live_panel() -> None:
-    is_open, status = live.market_status()
-    st.markdown(f"{'🟢' if is_open else '🔴'} **{status}**")
-
     try:
         q, intra, m = get_quotes(), get_intraday(), get_metals()
     except Exception as err:  # noqa: BLE001
+        st.markdown(f"🔴 **{live.market_status()[1]}**")
         st.warning(f"Couldn't load prices right now ({err}). Retrying in {REFRESH_SECONDS} seconds.")
         return
+
+    last_trade = intra[live.NIFTY].dropna().index.max() if live.NIFTY in intra else None
+    is_open, status = live.market_status(last_trade=last_trade)
+    st.markdown(f"{'🟢' if is_open else '🔴'} **{status}**")
 
     # Headline numbers
     nifty = q.loc[live.NIFTY]

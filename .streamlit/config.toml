@@ -1,16 +1,16 @@
-# Clean, minimal look: light grey canvas, white rounded cards, system font, one blue accent.
+# "Midnight": near-black canvas, soft grey cards, system font, one blue accent.
 [theme]
-base = "light"
-primaryColor = "#0071E3"
-backgroundColor = "#F5F5F7"
-secondaryBackgroundColor = "#FFFFFF"
-textColor = "#1D1D1F"
-linkColor = "#0066CC"
+base = "dark"
+primaryColor = "#0A84FF"
+backgroundColor = "#0B0B0F"
+secondaryBackgroundColor = "#17171C"
+textColor = "#F5F5F7"
+linkColor = "#0A84FF"
 linkUnderline = false
-blueColor = "#0071E3"
-greenColor = "#248A3D"
-redColor = "#D70015"
-grayColor = "#86868B"
+blueColor = "#0A84FF"
+greenColor = "#30D158"
+redColor = "#FF453A"
+grayColor = "#8E8E93"
 font = "-apple-system, BlinkMacSystemFont, Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap, sans-serif"
 baseFontSize = 15
 headingFontWeights = [700, 650, 600]
@@ -19,15 +19,15 @@ metricValueFontWeight = 600
 metricValueFontSize = "1.9rem"
 baseRadius = "large"
 buttonRadius = "full"
-borderColor = "#E5E5EA"
-dataframeBorderColor = "#EDEDF0"
-dataframeHeaderBackgroundColor = "#FBFBFD"
+borderColor = "#2A2A31"
+dataframeBorderColor = "#232329"
+dataframeHeaderBackgroundColor = "#1C1C22"
 showSidebarBorder = true
-chartCategoricalColors = ["#0071E3", "#86868B", "#248A3D", "#D70015", "#BF5AF2", "#FF9F0A"]
+chartCategoricalColors = ["#0A84FF", "#8E8E93", "#30D158", "#FF453A", "#BF5AF2", "#FF9F0A"]
 
 [theme.sidebar]
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F5F5F7"
+backgroundColor = "#111115"
+secondaryBackgroundColor = "#17171C"
 
 [server]
 headless = true

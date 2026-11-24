@@ -33,12 +33,20 @@ GRAMS_PER_TROY_OUNCE = 31.1035
 MARKET_OPEN, MARKET_CLOSE = time(9, 15), time(15, 30)
 
 
-def market_status(now: datetime | None = None) -> tuple[bool, str]:
-    """Whether the NSE is in normal trading hours (weekends counted, exchange holidays not)."""
+def market_status(now: datetime | None = None, last_trade: datetime | None = None) -> tuple[bool, str]:
+    """Whether the NSE is trading now.
+
+    Clock and weekday decide normal hours. Exchange holidays fall on weekdays, so when
+    `last_trade` (time of the latest intraday price) is given and nothing has traded today
+    by 9:30 am, the market is treated as closed for a holiday.
+    """
     now = (now or datetime.now(IST)).astimezone(IST)
-    is_open = now.weekday() < 5 and MARKET_OPEN <= now.time() <= MARKET_CLOSE
-    label = "Market open" if is_open else "Market closed"
-    return is_open, f"{label} · {now:%a %d %b, %I:%M %p} IST"
+    in_hours = now.weekday() < 5 and MARKET_OPEN <= now.time() <= MARKET_CLOSE
+    stamp = f"{now:%a %d %b, %I:%M %p} IST"
+    if in_hours and last_trade is not None and now.time() >= time(9, 30):
+        if last_trade.astimezone(IST).date() < now.date():
+            return False, f"Market closed today (exchange holiday) · {stamp}"
+    return in_hours, f"{'Market open' if in_hours else 'Market closed'} · {stamp}"
 
 
 def _closes(tickers: list[str], **kwargs) -> pd.DataFrame:
