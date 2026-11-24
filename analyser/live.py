@@ -1,36 +1,120 @@
-"""Live market data for the dashboard: NSE top 10, NIFTY 50, gold, silver and news headlines.
+"""Live market data for the website: NIFTY 50 stocks, any NSE stock, gold, silver and news headlines.
 
 Source: Yahoo Finance via yfinance. Prices are delayed (NSE about 15 minutes, COMEX metals
 about 10 minutes). Nothing here is cached; the website caches each call for a set time.
+Stock lists come from NSE's public archives (see scripts/update_stock_lists.py).
 """
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, time
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import pandas as pd
 import yfinance as yf
 
 IST = ZoneInfo("Asia/Kolkata")
+DATA = Path(__file__).resolve().parent.parent / "data"
 
-# The 10 largest NSE-listed companies by market value (Nov 2026), largest first.
-TOP10 = {
-    "RELIANCE.NS": "Reliance Industries",
-    "BHARTIARTL.NS": "Bharti Airtel",
-    "HDFCBANK.NS": "HDFC Bank",
-    "ICICIBANK.NS": "ICICI Bank",
-    "SBIN.NS": "State Bank of India",
-    "TCS.NS": "Tata Consultancy Services",
-    "BAJFINANCE.NS": "Bajaj Finance",
-    "LT.NS": "Larsen & Toubro",
-    "KOTAKBANK.NS": "Kotak Mahindra Bank",
-    "HINDUNILVR.NS": "Hindustan Unilever",
-}
 NIFTY = "^NSEI"
 GOLD, SILVER, USD_INR = "GC=F", "SI=F", "INR=X"   # COMEX gold & silver futures (US$/oz), US$ in rupees
 GRAMS_PER_TROY_OUNCE = 31.1035
 
 MARKET_OPEN, MARKET_CLOSE = time(9, 15), time(15, 30)
+
+
+def _with_ticker(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    df["ticker"] = df["symbol"] + ".NS"
+    df["label"] = df["name"] + " (" + df["symbol"] + ")"
+    return df
+
+
+def nifty50() -> pd.DataFrame:
+    """The 50 NIFTY companies: symbol, name, industry, ticker, label."""
+    return _with_ticker(pd.read_csv(DATA / "nifty50.csv", dtype=str))
+
+
+def nse_equities() -> pd.DataFrame:
+    """Every NSE-listed equity (about 2,600): symbol, name, series, ticker, label."""
+    return _with_ticker(pd.read_csv(DATA / "nse_equities.csv", dtype=str, keep_default_na=False))
+
+
+def market_caps(tickers: list[str]) -> pd.Series:
+    """Current market value in rupees for each ticker (missing ones are left out)."""
+    def one(t: str) -> tuple[str, float | None]:
+        try:
+            return t, float(yf.Ticker(t).fast_info["market_cap"])
+        except Exception:  # noqa: BLE001
+            return t, None
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        caps = dict(pool.map(one, tickers))
+    return pd.Series({t: c for t, c in caps.items() if c}, dtype=float)
+
+
+def history(ticker: str, period: str, interval: str, last_session: bool = False) -> pd.DataFrame:
+    """OHLC price history for one ticker (index in IST for intraday intervals).
+
+    last_session=True keeps only the most recent trading day, so a "today" chart still
+    shows the last session on weekends and holidays.
+    """
+    df = yf.Ticker(ticker).history(period=period, interval=interval, auto_adjust=False)
+    if df.empty:
+        raise RuntimeError(f"No price history for {ticker}.")
+    if interval.endswith("m"):
+        df.index = df.index.tz_convert(IST)
+    if last_session:
+        df = df[df.index.date == df.index[-1].date()]
+    return df[["Open", "High", "Low", "Close", "Volume"]]
+
+
+def stock_facts(ticker: str) -> dict:
+    """Headline numbers for a stock page. Missing values come back as None."""
+    t = yf.Ticker(ticker)
+    fi = t.fast_info
+    def get(key: str):
+        try:
+            v = fi[key]
+            return None if v is None or pd.isna(v) else float(v)
+        except Exception:  # noqa: BLE001
+            return None
+    facts = {
+        "price": get("last_price"), "prev_close": get("previous_close"),
+        "day_low": get("day_low"), "day_high": get("day_high"),
+        "year_low": get("year_low"), "year_high": get("year_high"),
+        "market_cap": get("market_cap"), "volume": get("last_volume"),
+        "pe": None, "sector": None,
+    }
+    try:  # slower, richer endpoint; optional
+        info = t.info or {}
+        facts["pe"] = info.get("trailingPE")
+        facts["sector"] = info.get("sector")
+    except Exception:  # noqa: BLE001
+        pass
+    return facts
+
+
+def inr_short(x: float | None) -> str:
+    """Tight version for small cards: ₹18.28L cr, ₹4,520 cr, ₹95,000."""
+    if x is None or pd.isna(x):
+        return "n/a"
+    if x >= 1e12:
+        return f"₹{x / 1e12:,.2f}L cr"
+    if x >= 1e7:
+        return f"₹{x / 1e7:,.0f} cr"
+    return f"₹{x:,.0f}"
+
+
+def inr_compact(x: float | None) -> str:
+    """Rupees in Indian units: ₹18.28 lakh crore, ₹4,520 crore, ₹95,000."""
+    if x is None or pd.isna(x):
+        return "n/a"
+    if x >= 1e12:
+        return f"₹{x / 1e12:,.2f} lakh crore"
+    if x >= 1e7:
+        return f"₹{x / 1e7:,.0f} crore"
+    return f"₹{x:,.0f}"
 
 
 def market_status(now: datetime | None = None, last_trade: datetime | None = None) -> tuple[bool, str]:

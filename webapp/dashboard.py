@@ -1,15 +1,16 @@
-"""Market Dashboard: India's top 10 stocks, NIFTY 50, gold, silver and news, refreshing itself."""
+"""Market Dashboard: the NIFTY 50 as a heatmap and table, plus gold, silver and news, refreshing itself."""
 from datetime import datetime
 
 import pandas as pd
 import streamlit as st
 
 from analyser import live
-from webapp import plots, style
+from webapp import common, plots, style
 
 REFRESH_SECONDS = 60
 NEWS_REFRESH_SECONDS = 30 * 60
-ALL_TICKERS = list(live.TOP10) + [live.NIFTY]
+NIFTY50 = live.nifty50()
+ALL_TICKERS = NIFTY50["ticker"].tolist() + [live.NIFTY]
 
 
 @st.cache_data(ttl=REFRESH_SECONDS, show_spinner=False)
@@ -27,25 +28,22 @@ def get_metals() -> pd.DataFrame:
     return live.metals("1mo")
 
 
+@st.cache_data(ttl=6 * 60 * 60, show_spinner=False)
+def get_market_caps() -> pd.Series:
+    return live.market_caps(NIFTY50["ticker"].tolist())
+
+
 @st.cache_data(ttl=NEWS_REFRESH_SECONDS, show_spinner=False)
-def get_news() -> pd.DataFrame:
-    return live.news({**live.TOP10, live.NIFTY: "Indian market"})
-
-
-def time_ago(ts: pd.Timestamp) -> str:
-    minutes = int((pd.Timestamp.now(tz="UTC") - ts).total_seconds() // 60)
-    if minutes < 60:
-        return f"{max(minutes, 1)} min ago"
-    if minutes < 48 * 60:
-        return f"{minutes // 60} h ago"
-    return ts.tz_convert(live.IST).strftime("%d %b")
+def get_news(tickers: tuple[str, ...]) -> pd.DataFrame:
+    names = dict(zip(NIFTY50["ticker"], NIFTY50["name"].map(common.short_name)))
+    return live.news({**{t: names[t] for t in tickers}, live.NIFTY: "Indian market"})
 
 
 style.header(
     "Live markets · India",
     "Nain Capital Analytics",
-    "India's 10 largest listed companies, gold and silver, and the latest market news, in one place. "
-    "Prices from Yahoo Finance, delayed about 15 minutes. For information only, not investment advice.",
+    "The NIFTY 50, gold and silver, and the latest market news, in one place. Prices from Yahoo Finance, "
+    "delayed about 15 minutes. For information only, not investment advice.",
 )
 
 
@@ -75,38 +73,54 @@ def live_panel() -> None:
     c4.metric("US$ in ₹", f"₹{m['usd_inr'].iloc[-1]:.2f}",
               f"{m['usd_inr'].iloc[-1] / m['usd_inr'].iloc[-2] - 1:+.2%}", delta_color="off", border=True)
 
-    # Top 10 table with a sparkline of today's prices
-    st.subheader("Top 10 Indian companies")
-    stocks = q.drop(index=live.NIFTY, errors="ignore")
+    # One table of all 50 stocks, used by both the heatmap and the list
+    stocks = NIFTY50.set_index("ticker").join(q[["price", "change", "change_pct"]], how="inner")
+    try:
+        stocks["market_cap"] = get_market_caps()
+    except Exception:  # noqa: BLE001  heatmap falls back to equal tiles
+        stocks["market_cap"] = None
+    if stocks["market_cap"].isna().all():
+        stocks["market_cap"] = 1.0
+    stocks["short"] = stocks["name"].map(common.short_name)
+
+    up, down = int((stocks["change_pct"] > 0).sum()), int((stocks["change_pct"] < 0).sum())
+    st.subheader("NIFTY 50 heatmap")
+    st.caption(f"Tile size is company value, colour is today's move. {up} up · {down} down. "
+               "Hover a tile for the full name.")
+    st.plotly_chart(plots.heatmap(stocks.reset_index()), use_container_width=True,
+                    config={"displayModeBar": False})
+
+    st.subheader("NIFTY 50 stocks")
+    st.caption("Click a column to sort. Open a stock for its chart, key numbers and news.")
     table = pd.DataFrame({
-        "Company": [live.TOP10[t] for t in stocks.index],
+        "Company": stocks["short"].values,
+        "Sector": stocks["industry"].values,
         "Price (₹)": stocks["price"].values,
         "Change (₹)": stocks["change"].values,
         "Change": stocks["change_pct"].values * 100,
         "Today": [intra[t].dropna().tolist() if t in intra else [] for t in stocks.index],
-    })
+        "Details": ["stock?symbol=" + s for s in stocks["symbol"]],
+    }).sort_values("Change", ascending=False)
     styled = table.style.map(lambda v: f"color: {plots.GAIN if v >= 0 else plots.LOSS}",
                              subset=["Change (₹)", "Change"])
-    st.dataframe(styled, hide_index=True, use_container_width=True, height=35 * (len(table) + 1) + 3,
+    st.dataframe(styled, hide_index=True, use_container_width=True, height=36 * 13,
                  column_config={
                      "Price (₹)": st.column_config.NumberColumn(format="₹%.2f"),
                      "Change (₹)": st.column_config.NumberColumn(format="%+.2f"),
                      "Change": st.column_config.NumberColumn(format="%+.2f%%"),
-                     "Today": st.column_config.LineChartColumn("Today (5-min)", width="medium"),
+                     "Today": st.column_config.LineChartColumn("Today (5-min)", width="small"),
+                     "Details": st.column_config.LinkColumn("", display_text="Open ›", width="small"),
                  })
 
     # Charts
-    t1, t2, t3, t4 = st.tabs(["NIFTY 50 today", "Top 10: today's moves", "Gold, 1 month", "Silver, 1 month"])
+    t1, t2, t3 = st.tabs(["NIFTY 50 today", "Gold, 1 month", "Silver, 1 month"])
     with t1:
         st.plotly_chart(plots.intraday_line(intra[live.NIFTY], "NIFTY 50"), use_container_width=True)
     with t2:
-        moves = pd.Series(stocks["change_pct"].values, index=[live.TOP10[t] for t in stocks.index])
-        st.plotly_chart(plots.change_bars(moves), use_container_width=True)
-    with t3:
         st.plotly_chart(plots.price_line(m["gold_inr_10g"], "Gold ₹/10 g"), use_container_width=True)
         st.caption("International (COMEX) price converted to rupees. Indian retail and MCX prices are "
                    "higher because they include import duty and GST.")
-    with t4:
+    with t3:
         st.plotly_chart(plots.price_line(m["silver_inr_kg"], "Silver ₹/kg"), use_container_width=True)
         st.caption("International (COMEX) price converted to rupees, before Indian duty and GST.")
 
@@ -118,19 +132,15 @@ def live_panel() -> None:
 def news_panel() -> None:
     st.subheader("Market news")
     try:
-        items = get_news()
+        caps = get_market_caps()
+        biggest = tuple(caps.sort_values(ascending=False).index[:10]) if len(caps) else \
+            tuple(NIFTY50["ticker"][:10])
+        items = get_news(biggest)
     except Exception:  # noqa: BLE001
         st.info("News is unavailable right now. It will retry shortly.")
         return
-    if items.empty:
-        st.info("No recent headlines found.")
-        return
-    for row in items.itertuples():
-        title = row.title.replace("[", "(").replace("]", ")")  # keep the link markdown intact
-        url = row.url.replace(")", "%29").replace(" ", "%20")
-        st.markdown(f"**[{title}]({url})**")
-        st.caption(f"{row.source} · {row.company} · {time_ago(row.published)}")
-    st.caption("Headlines link to the original publishers. Updated every 30 minutes.")
+    common.render_news(items)
+    st.caption("News covers the 10 largest NIFTY 50 companies and the wider market, updated every 30 minutes.")
 
 
 live_panel()

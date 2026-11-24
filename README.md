@@ -4,25 +4,25 @@
 
 🔗 **Live demo: [nain-capital-analytics.streamlit.app](https://nain-capital-analytics.streamlit.app)**
 
-A Python + SQL project with two parts:
-
-1. **A live website** (Streamlit) showing India's 10 largest listed companies, the NIFTY 50, gold and silver prices in rupees, and the latest market news. It refreshes itself every 60 seconds.
-2. **A portfolio analyser** that measures how a portfolio of NSE stocks has really performed, and how much risk it took, compared with the NIFTY 50. It runs as a page on the website and as a command-line report.
+A Python + SQL project: a live market website for Indian equities, plus a portfolio risk analyser that also runs as a command-line report.
 
 ## The website
 
-| Market Dashboard | Portfolio Analyser |
+| Page | What it does |
 |---|---|
-| Top 10 NSE companies: price, today's change and an intraday sparkline | Edit the holdings table (any NSE tickers) and analyse it instantly |
-| NIFTY 50 headline and intraday chart, with a market open/closed indicator | Return vs NIFTY 50, worst fall, Sharpe ratio and beta |
-| Gold (₹ per 10 g) and silver (₹ per kg), converted from international prices | Interactive growth, drawdown, risk-vs-return, allocation and correlation charts |
-| Market news headlines for the top 10, linking to the original publishers | Holdings and per-stock risk tables |
+| **Market Dashboard** | Live NIFTY 50: a sector heatmap (tile size = company value, colour = today's move), a sortable table of all 50 stocks with intraday sparklines, gold (₹ per 10 g) and silver (₹ per kg), and market news. Shows when the market is open, closed or on an exchange holiday. |
+| **Stock Lookup** | Search all ~2,600 NSE-listed companies. Each stock gets an interactive chart (1D, 1W, 1M, 6M, 1Y, 5Y; line or candlesticks), price, market value, P/E ratio, 52-week position and its own news. Shareable links like `/stock?symbol=TCS`. |
+| **What If I Invested?** | Pick an amount, a start date and up to four investments (any NSE stock, the NIFTY 50, gold or silver) and see what they'd be worth today, with growth, annual return and worst fall. |
+| **Portfolio Analyser** | Edit a holdings table and see return vs the NIFTY 50, volatility, drawdown, Sharpe ratio, beta, allocation and correlation. |
 
 | What | Refreshes | Note |
 |---|---|---|
-| Stocks and NIFTY 50 | every 60 s | Yahoo Finance, about 15 min delayed |
+| NIFTY 50 stocks and index | every 60 s | Yahoo Finance, about 15 min delayed |
 | Gold, silver, US$/₹ | every 60 s (cached 5 min) | International COMEX prices; Indian retail prices add duty and GST |
+| Company values (heatmap sizes) | every 6 h | |
 | News | every 30 min | Headlines only, linked to the source |
+
+Stock lists come from NSE's public archives and are refreshed with `python scripts/update_stock_lists.py`.
 
 ![Growth of 1 rupee: portfolio vs NIFTY 50](reports/growth_vs_benchmark.png)
 
@@ -66,7 +66,9 @@ Yahoo Finance ──► SQLite (prices) ──────────►sql/mon
 | Part | What it does |
 |---|---|
 | `app.py`, `webapp/` | The Streamlit website: dashboard page, portfolio page and Plotly charts |
-| `analyser/live.py` | Live quotes, intraday prices, gold/silver in rupees, news headlines, NSE market hours |
+| `analyser/live.py` | Live quotes, intraday prices, market values, stock facts, gold/silver in rupees, news, NSE market hours and holidays |
+| `analyser/whatif.py` | "What if I invested" maths in rupees for stocks, the NIFTY 50, gold and silver |
+| `data/nifty50.csv`, `data/nse_equities.csv` | Official NSE lists of NIFTY 50 constituents (with sectors) and all listed equities |
 | `analyser/analysis.py` | One analysis pipeline shared by the website and the command-line report |
 | `analyser/fetch.py` | Downloads split- and dividend-adjusted daily closes with `yfinance` |
 | `sql/schema.sql` | `prices` and `holdings` tables |

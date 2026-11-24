@@ -110,3 +110,73 @@ def correlation(returns: pd.DataFrame) -> go.Figure:
     fig.update_yaxes(title=None)
     fig.update_layout(hovermode="closest")
     return _layout(fig, height=max(360, 40 * len(corr) + 120))
+
+
+def heatmap(df: pd.DataFrame) -> go.Figure:
+    """Treemap of stocks grouped by sector: tile size = market value, colour = today's % change.
+
+    Expects columns: symbol, name, industry, market_cap, change_pct.
+    """
+    d = df.dropna(subset=["market_cap", "change_pct"])
+    sectors = d.groupby("industry").apply(
+        lambda g: pd.Series({"market_cap": g["market_cap"].sum(),
+                             "change_pct": (g["change_pct"] * g["market_cap"]).sum() / g["market_cap"].sum()}),
+        include_groups=False)
+    ids = list(sectors.index) + list(d["symbol"])
+    labels = list(sectors.index) + list(d["symbol"])
+    parents = [""] * len(sectors) + list(d["industry"])
+    values = list(sectors["market_cap"]) + list(d["market_cap"])
+    colors = list(sectors["change_pct"]) + list(d["change_pct"])
+    names = list(sectors.index) + list(d["name"])
+    fig = go.Figure(go.Treemap(
+        ids=ids, labels=labels, parents=parents, values=values, branchvalues="total",
+        customdata=[[n, c] for n, c in zip(names, colors)],
+        marker=dict(colors=colors, colorscale=[[0, LOSS], [0.5, "#2C2C34"], [1, GAIN]], cmid=0,
+                    cmin=-0.03, cmax=0.03, line=dict(color=CARD, width=1.5)),
+        texttemplate="<b>%{label}</b><br>%{customdata[1]:+.2%}",
+        hovertemplate="<b>%{customdata[0]}</b><br>Today %{customdata[1]:+.2%}<extra></extra>",
+        textfont=dict(family=FONT, color=TEXT), pathbar=dict(visible=False), tiling=dict(pad=2),
+    ))
+    fig.update_layout(margin=dict(l=4, r=4, t=4, b=4), height=520, paper_bgcolor="rgba(0,0,0,0)",
+                      font=dict(family=FONT, color=TEXT),
+                      hoverlabel=dict(bgcolor="#1C1C22", bordercolor="#3A3A40", font=dict(family=FONT, color=TEXT)))
+    return fig
+
+
+def stock_chart(ohlc: pd.DataFrame, candles: bool, intraday: bool) -> go.Figure:
+    """Price chart for a stock page: candlesticks or a line coloured by the move over the period."""
+    up = ohlc["Close"].iloc[-1] >= ohlc["Close"].iloc[0]
+    if candles:
+        trace = go.Candlestick(x=ohlc.index, open=ohlc["Open"], high=ohlc["High"], low=ohlc["Low"],
+                               close=ohlc["Close"], increasing_line_color=GAIN, decreasing_line_color=LOSS,
+                               increasing_fillcolor=GAIN, decreasing_fillcolor=LOSS, name="Price")
+    else:
+        color = GAIN if up else LOSS
+        trace = go.Scatter(x=ohlc.index, y=ohlc["Close"], mode="lines", name="Price",
+                           line=dict(color=color, width=2), fill="tozeroy",
+                           fillcolor="rgba(48,209,88,0.08)" if up else "rgba(255,69,58,0.08)",
+                           hovertemplate="₹%{y:,.2f}<extra></extra>")
+    fig = go.Figure(trace)
+    lo, hi = ohlc["Low"].min(), ohlc["High"].max()
+    pad = (hi - lo) * 0.08 or hi * 0.01
+    fig.update_yaxes(range=[lo - pad, hi + pad], tickprefix="₹")
+    fig.update_xaxes(rangeslider_visible=False, tickformat="%H:%M" if intraday else None)
+    if intraday:  # hide overnight gaps in multi-day intraday charts
+        fig.update_xaxes(rangebreaks=[dict(bounds=[15.5, 9.25], pattern="hour"), dict(bounds=["sat", "mon"])])
+    else:
+        fig.update_xaxes(rangebreaks=[dict(bounds=["sat", "mon"])])
+    fig = _layout(fig, height=420)
+    fig.update_layout(showlegend=False, hovermode="x unified")
+    return fig
+
+
+def value_lines(series: dict[str, pd.Series]) -> go.Figure:
+    """Value of each investment over time, one line per asset."""
+    palette = [PRIMARY, "#FF9F0A", "#BF5AF2", GAIN]
+    fig = go.Figure([
+        go.Scatter(x=s.index, y=s, mode="lines", name=name, line=dict(color=palette[i % 4], width=2),
+                   hovertemplate=f"{name}: ₹%{{y:,.0f}}<extra></extra>")
+        for i, (name, s) in enumerate(series.items())
+    ])
+    fig.update_yaxes(tickprefix="₹")
+    return _layout(fig, height=420)
