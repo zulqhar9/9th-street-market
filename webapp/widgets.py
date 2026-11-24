@@ -41,8 +41,8 @@ def _colour(change: float) -> str:
     return UP if change > 0 else DOWN if change < 0 else FLAT
 
 
-def sparkline(series: pd.Series, width: int, height: int) -> str:
-    """Smooth SVG line of a price series, green if it ended higher than it started."""
+def sparkline(series: pd.Series, width: int, height: int, colour: str | None = None) -> str:
+    """Smooth SVG line of a price series. Green if it ended higher than it started, unless `colour` is given."""
     s = series.dropna()
     if len(s) < 2:
         return ""
@@ -50,7 +50,7 @@ def sparkline(series: pd.Series, width: int, height: int) -> str:
     span = (hi - lo) or 1.0
     step = width / (len(s) - 1)
     pts = " ".join(f"{i * step:.1f},{height - 3 - (v - lo) / span * (height - 6):.1f}" for i, v in enumerate(s))
-    colour = UP if s.iloc[-1] >= s.iloc[0] else DOWN
+    colour = colour or (UP if s.iloc[-1] >= s.iloc[0] else DOWN)
     return (f'<svg width="100%" height="{height}" viewBox="0 0 {width} {height}" preserveAspectRatio="none" '
             f'aria-hidden="true"><polyline fill="none" stroke="{colour}" stroke-width="2" '
             f'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" points="{pts}"/></svg>')
@@ -110,7 +110,7 @@ def board(*, nifty: pd.Series, nifty_intraday: pd.Series, status: str, is_open: 
     <div class="wb-value">{indian(nifty['price'], 2)}</div>
     <div class="wb-change" style="color:{_colour(nifty['change'])}">{_signed(nifty['change'])} · {pct(nifty['change_pct'])}</div>
   </div>
-  <div class="wb-spark">{sparkline(nifty_intraday, 300, 90)}</div>
+  <div class="wb-spark">{sparkline(nifty_intraday, 300, 90, colour=_colour(nifty['change']))}</div>
   <div class="wb-foot">{escape(session)} · US$1 = ₹{usd_inr:.2f}</div>
 </div>"""
 
@@ -136,3 +136,57 @@ def board(*, nifty: pd.Series, nifty_intraday: pd.Series, status: str, is_open: 
             + small("Gold · 10 g", "₹" + indian(gold_now), g_chg)
             + small("Silver · 1 kg", "₹" + indian(silver_now), s_chg)
             + breadth + mover + "</div></div>")
+
+
+LIST_CSS = """
+<style>
+.sl { columns: 2 24rem; column-gap: 28px; margin-top: 0.25rem; }
+.sl-row { break-inside: avoid; display: grid; grid-template-columns: minmax(0, 1fr) 76px 104px; align-items: center;
+          gap: 12px; padding: 11px 6px; border-bottom: 0.5px solid #2C2C2E; text-decoration: none !important;
+          border-radius: 12px; transition: background 0.15s ease; }
+.sl-row:hover { background: #1C1C1E; }
+.sl-sym { color: #F5F5F7; font-size: 0.98rem; font-weight: 600; letter-spacing: -0.01em; }
+.sl-name { color: #8E8E93; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sl-price { color: #F5F5F7; font-size: 0.92rem; text-align: right; font-variant-numeric: tabular-nums; }
+.sl-pill { display: block; margin: 4px 0 0 auto; width: 78px; text-align: center; color: #000; font-size: 0.82rem;
+           font-weight: 600; padding: 3px 0; border-radius: 7px; font-variant-numeric: tabular-nums; }
+.sl-sector { column-span: all; color: #8E8E93; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.05em;
+             text-transform: uppercase; margin: 18px 6px 2px; }
+</style>
+"""
+
+
+def _row(symbol: str, name: str, price: float, change_pct: float, intraday: pd.Series | None) -> str:
+    pill = UP if change_pct > 0 else DOWN if change_pct < 0 else "#636366"
+    # Like Apple Stocks: the line takes the same colour as the day's change vs yesterday's close.
+    spark = sparkline(intraday, 76, 30, colour=pill if change_pct else None) if intraday is not None else ""
+    return (f'<a class="sl-row" href="stock?symbol={escape(symbol)}" target="_self">'
+            f'<div style="min-width:0"><div class="sl-sym">{escape(symbol)}</div>'
+            f'<div class="sl-name">{escape(name)}</div></div>'
+            f'<div>{spark}</div>'
+            f'<div><div class="sl-price">₹{indian(price, 2)}</div>'
+            f'<span class="sl-pill" style="background:{pill}">{pct(change_pct)}</span></div></a>')
+
+
+def stock_list(stocks: pd.DataFrame, intraday: pd.DataFrame, order: str) -> str:
+    """Apple Stocks-style list. `stocks` is indexed by ticker with symbol, short, industry, price, change_pct.
+
+    order: "gainers", "losers", "az" or "sector" (sector adds small section headings).
+    """
+    if order == "losers":
+        d = stocks.sort_values("change_pct")
+    elif order == "az":
+        d = stocks.sort_values("symbol")
+    elif order == "sector":
+        d = stocks.sort_values(["industry", "change_pct"], ascending=[True, False])
+    else:
+        d = stocks.sort_values("change_pct", ascending=False)
+
+    parts, current = [], None
+    for ticker, r in d.iterrows():
+        if order == "sector" and r["industry"] != current:
+            current = r["industry"]
+            parts.append(f'<div class="sl-sector">{escape(current)}</div>')
+        series = intraday[ticker] if ticker in intraday else None
+        parts.append(_row(r["symbol"], r["short"], r["price"], r["change_pct"], series))
+    return LIST_CSS + '<div class="sl">' + "".join(parts) + "</div>"

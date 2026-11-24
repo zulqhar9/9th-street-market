@@ -75,27 +75,12 @@ def live_panel() -> None:
     ), unsafe_allow_html=True)
     st.caption("Gold and silver are international prices converted to rupees, before Indian duty and GST.")
 
-    st.subheader("NIFTY 50 stocks")
-    st.caption("Click a column to sort. Open a stock for its chart, key numbers and news.")
-    table = pd.DataFrame({
-        "Company": stocks["short"].values,
-        "Sector": stocks["industry"].values,
-        "Price (₹)": stocks["price"].values,
-        "Change (₹)": stocks["change"].values,
-        "Change": stocks["change_pct"].values * 100,
-        "Today": [intra[t].dropna().tolist() if t in intra else [] for t in stocks.index],
-        "Details": ["stock?symbol=" + s for s in stocks["symbol"]],
-    }).sort_values("Change", ascending=False)
-    styled = table.style.map(lambda v: f"color: {plots.GAIN if v >= 0 else plots.LOSS}",
-                             subset=["Change (₹)", "Change"])
-    st.dataframe(styled, hide_index=True, use_container_width=True, height=36 * 13,
-                 column_config={
-                     "Price (₹)": st.column_config.NumberColumn(format="₹%.2f"),
-                     "Change (₹)": st.column_config.NumberColumn(format="%+.2f"),
-                     "Change": st.column_config.NumberColumn(format="%+.2f%%"),
-                     "Today": st.column_config.LineChartColumn("Today (5-min)", width="small"),
-                     "Details": st.column_config.LinkColumn("", display_text="Open ›", width="small"),
-                 })
+    st.subheader("NIFTY 50")
+    orders = {"Top gainers": "gainers", "Top losers": "losers", "A–Z": "az", "By sector": "sector"}
+    choice = st.segmented_control("Sort", list(orders), default="Top gainers", key="nifty_sort",
+                                  label_visibility="collapsed") or "Top gainers"
+    st.markdown(widgets.stock_list(stocks, intra, orders[choice]), unsafe_allow_html=True)
+    st.caption("Tap a stock for its chart, key numbers and news.")
 
     # Charts
     t1, t2, t3 = st.tabs(["NIFTY 50 today", "Gold, 1 month", "Silver, 1 month"])
