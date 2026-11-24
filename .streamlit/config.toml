@@ -1,9 +1,9 @@
-# "Midnight": near-black canvas, soft grey cards, system font, one blue accent.
+# "Midnight": true black canvas, iOS-style grey cards, system font, one blue accent.
 [theme]
 base = "dark"
 primaryColor = "#0A84FF"
-backgroundColor = "#0B0B0F"
-secondaryBackgroundColor = "#17171C"
+backgroundColor = "#000000"
+secondaryBackgroundColor = "#1C1C1E"
 textColor = "#F5F5F7"
 linkColor = "#0A84FF"
 linkUnderline = false
@@ -19,15 +19,15 @@ metricValueFontWeight = 600
 metricValueFontSize = "1.9rem"
 baseRadius = "large"
 buttonRadius = "full"
-borderColor = "#2A2A31"
-dataframeBorderColor = "#232329"
-dataframeHeaderBackgroundColor = "#1C1C22"
+borderColor = "#2C2C2E"
+dataframeBorderColor = "#2C2C2E"
+dataframeHeaderBackgroundColor = "#232325"
 showSidebarBorder = true
 chartCategoricalColors = ["#0A84FF", "#8E8E93", "#30D158", "#FF453A", "#BF5AF2", "#FF9F0A"]
 
 [theme.sidebar]
-backgroundColor = "#111115"
-secondaryBackgroundColor = "#17171C"
+backgroundColor = "#0A0A0B"
+secondaryBackgroundColor = "#1C1C1E"
 
 [server]
 headless = true

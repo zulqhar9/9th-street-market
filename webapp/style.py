@@ -10,10 +10,11 @@ _CSS = """
 h1, h2, h3 { letter-spacing: -0.022em; }
 h1 { line-height: 1.08; }
 
-/* Metric tiles as soft grey cards with a hairline edge (shadows don't read on dark) */
+/* Metric tiles as iOS-style grey cards: no border, generous rounding */
 [data-testid="stMetric"] {
-    background: #17171C;
-    border: 0.5px solid #2A2A31 !important;
+    background: #1C1C1E;
+    border: none !important;
+    border-radius: 22px;
     padding: 1.1rem 1.25rem;
 }
 [data-testid="stMetricLabel"] p { color: #8E8E93; font-weight: 500; }
@@ -29,9 +30,9 @@ h1 { line-height: 1.08; }
 
 /* Tables, charts and forms sit on the same cards */
 [data-testid="stDataFrame"], [data-testid="stPlotlyChart"], [data-testid="stForm"] {
-    background: #17171C;
-    border: 0.5px solid #2A2A31;
-    border-radius: 18px;
+    background: #1C1C1E;
+    border: none;
+    border-radius: 22px;
     padding: 0.5rem;
 }
 [data-testid="stForm"] { padding: 1rem 1.25rem; }
@@ -39,7 +40,7 @@ h1 { line-height: 1.08; }
 /* Pill-style tabs (segmented control look) */
 [data-testid="stTabs"] [role="tablist"] {
     gap: 0.25rem; border: none !important; box-shadow: none !important;
-    background: #1C1C22; border-radius: 980px; padding: 0.2rem; width: fit-content; max-width: 100%;
+    background: #1C1C1E; border-radius: 980px; padding: 0.2rem; width: fit-content; max-width: 100%;
     overflow-x: auto;
 }
 [data-testid="stTabs"] [role="tablist"]::before, [data-testid="stTabs"] [role="tablist"]::after,
@@ -49,12 +50,12 @@ h1 { line-height: 1.08; }
     background: transparent; box-shadow: none !important; white-space: nowrap;
 }
 [data-testid="stTab"] p { color: #A1A1A6; font-weight: 500; }
-[data-testid="stTab"][aria-selected="true"] { background: #2C2C34; }
+[data-testid="stTab"][aria-selected="true"] { background: #3A3A3C; }
 [data-testid="stTab"][aria-selected="true"] p { color: #F5F5F7; }
 [data-testid="stTabs"] [role="tablist"] + div[aria-hidden], [data-testid="stTabs"] hr { display: none; }
 
 /* Quieter dividers and captions */
-hr { border-color: #2A2A31 !important; }
+hr { border-color: #2C2C2E !important; }
 [data-testid="stCaptionContainer"] { color: #8E8E93; }
 
 /* Hide the Streamlit footer */

@@ -12,8 +12,8 @@ LOSS = "#FF453A"
 STOCK = "#D1D1D6"     # individual stocks on scatter charts
 TEXT = "#F5F5F7"
 TEXT_2 = "#8E8E93"
-GRID = "#26262C"
-CARD = "#17171C"
+GRID = "#2C2C2E"
+CARD = "#1C1C1E"
 FONT = "-apple-system, BlinkMacSystemFont, Inter, Segoe UI, sans-serif"
 
 
@@ -110,37 +110,6 @@ def correlation(returns: pd.DataFrame) -> go.Figure:
     fig.update_yaxes(title=None)
     fig.update_layout(hovermode="closest")
     return _layout(fig, height=max(360, 40 * len(corr) + 120))
-
-
-def heatmap(df: pd.DataFrame) -> go.Figure:
-    """Treemap of stocks grouped by sector: tile size = market value, colour = today's % change.
-
-    Expects columns: symbol, name, industry, market_cap, change_pct.
-    """
-    d = df.dropna(subset=["market_cap", "change_pct"])
-    sectors = d.groupby("industry").apply(
-        lambda g: pd.Series({"market_cap": g["market_cap"].sum(),
-                             "change_pct": (g["change_pct"] * g["market_cap"]).sum() / g["market_cap"].sum()}),
-        include_groups=False)
-    ids = list(sectors.index) + list(d["symbol"])
-    labels = list(sectors.index) + list(d["symbol"])
-    parents = [""] * len(sectors) + list(d["industry"])
-    values = list(sectors["market_cap"]) + list(d["market_cap"])
-    colors = list(sectors["change_pct"]) + list(d["change_pct"])
-    names = list(sectors.index) + list(d["name"])
-    fig = go.Figure(go.Treemap(
-        ids=ids, labels=labels, parents=parents, values=values, branchvalues="total",
-        customdata=[[n, c] for n, c in zip(names, colors)],
-        marker=dict(colors=colors, colorscale=[[0, LOSS], [0.5, "#2C2C34"], [1, GAIN]], cmid=0,
-                    cmin=-0.03, cmax=0.03, line=dict(color=CARD, width=1.5)),
-        texttemplate="<b>%{label}</b><br>%{customdata[1]:+.2%}",
-        hovertemplate="<b>%{customdata[0]}</b><br>Today %{customdata[1]:+.2%}<extra></extra>",
-        textfont=dict(family=FONT, color=TEXT), pathbar=dict(visible=False), tiling=dict(pad=2),
-    ))
-    fig.update_layout(margin=dict(l=4, r=4, t=4, b=4), height=520, paper_bgcolor="rgba(0,0,0,0)",
-                      font=dict(family=FONT, color=TEXT),
-                      hoverlabel=dict(bgcolor="#1C1C22", bordercolor="#3A3A40", font=dict(family=FONT, color=TEXT)))
-    return fig
 
 
 def stock_chart(ohlc: pd.DataFrame, candles: bool, intraday: bool) -> go.Figure:

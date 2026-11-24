@@ -1,11 +1,11 @@
-"""Market Dashboard: the NIFTY 50 as a heatmap and table, plus gold, silver and news, refreshing itself."""
+"""Market Dashboard: a widget board (NIFTY 50, gold, silver, breadth, top mover), the NIFTY 50 list, and news."""
 from datetime import datetime
 
 import pandas as pd
 import streamlit as st
 
 from analyser import live
-from webapp import common, plots, style
+from webapp import common, plots, style, widgets
 
 REFRESH_SECONDS = 60
 NEWS_REFRESH_SECONDS = 30 * 60
@@ -58,37 +58,22 @@ def live_panel() -> None:
 
     last_trade = intra[live.NIFTY].dropna().index.max() if live.NIFTY in intra else None
     is_open, status = live.market_status(last_trade=last_trade)
-    st.markdown(f"{'🟢' if is_open else '🔴'} **{status}**")
 
-    # Headline numbers
-    nifty = q.loc[live.NIFTY]
-    g_now, g_prev = m["gold_inr_10g"].iloc[-1], m["gold_inr_10g"].iloc[-2]
-    s_now, s_prev = m["silver_inr_kg"].iloc[-1], m["silver_inr_kg"].iloc[-2]
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("NIFTY 50", f"{nifty.price:,.2f}", f"{nifty.change:+,.2f} ({nifty.change_pct:+.2%})", border=True)
-    c2.metric("Gold · ₹ per 10 g", f"₹{g_now:,.0f}", f"{g_now / g_prev - 1:+.2%}", border=True,
-              help=f"International price US${m['gold_usd_oz'].iloc[-1]:,.1f}/oz, converted to rupees.")
-    c3.metric("Silver · ₹ per kg", f"₹{s_now:,.0f}", f"{s_now / s_prev - 1:+.2%}", border=True,
-              help=f"International price US${m['silver_usd_oz'].iloc[-1]:,.2f}/oz, converted to rupees.")
-    c4.metric("US$ in ₹", f"₹{m['usd_inr'].iloc[-1]:.2f}",
-              f"{m['usd_inr'].iloc[-1] / m['usd_inr'].iloc[-2] - 1:+.2%}", delta_color="off", border=True)
-
-    # One table of all 50 stocks, used by both the heatmap and the list
     stocks = NIFTY50.set_index("ticker").join(q[["price", "change", "change_pct"]], how="inner")
-    try:
-        stocks["market_cap"] = get_market_caps()
-    except Exception:  # noqa: BLE001  heatmap falls back to equal tiles
-        stocks["market_cap"] = None
-    if stocks["market_cap"].isna().all():
-        stocks["market_cap"] = 1.0
     stocks["short"] = stocks["name"].map(common.short_name)
+    top = stocks.loc[stocks["change_pct"].abs().idxmax()]
 
-    up, down = int((stocks["change_pct"] > 0).sum()), int((stocks["change_pct"] < 0).sum())
-    st.subheader("NIFTY 50 heatmap")
-    st.caption(f"Tile size is company value, colour is today's move. {up} up · {down} down. "
-               "Hover a tile for the full name.")
-    st.plotly_chart(plots.heatmap(stocks.reset_index()), use_container_width=True,
-                    config={"displayModeBar": False})
+    # iPhone-style widget board: NIFTY 50, gold, silver, market breadth, top mover
+    st.markdown(widgets.board(
+        nifty=q.loc[live.NIFTY], nifty_intraday=intra[live.NIFTY], status=status, is_open=is_open,
+        session="Live, updates every minute" if is_open else
+        (f"Last session {last_trade:%a %d %b}" if last_trade is not None else "Market closed"),
+        gold_now=m["gold_inr_10g"].iloc[-1], gold_prev=m["gold_inr_10g"].iloc[-2],
+        silver_now=m["silver_inr_kg"].iloc[-1], silver_prev=m["silver_inr_kg"].iloc[-2],
+        usd_inr=m["usd_inr"].iloc[-1], up=int((stocks["change_pct"] > 0).sum()), total=len(stocks),
+        top_symbol=top["symbol"], top_name=top["short"], top_change=top["change_pct"],
+    ), unsafe_allow_html=True)
+    st.caption("Gold and silver are international prices converted to rupees, before Indian duty and GST.")
 
     st.subheader("NIFTY 50 stocks")
     st.caption("Click a column to sort. Open a stock for its chart, key numbers and news.")
