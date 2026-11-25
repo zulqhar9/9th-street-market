@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from webapp.widgets import indian, sparkline  # noqa: E402
+from webapp.widgets import DOWN, UP, indian, sparkline  # noqa: E402
 
 
 class IndianGroupingTests(unittest.TestCase):
@@ -22,8 +22,8 @@ class IndianGroupingTests(unittest.TestCase):
 
 class SparklineTests(unittest.TestCase):
     def test_colour_follows_direction(self):
-        self.assertIn("#30D158", sparkline(pd.Series([1.0, 2.0, 3.0]), 100, 30))
-        self.assertIn("#FF453A", sparkline(pd.Series([3.0, 2.0, 1.0]), 100, 30))
+        self.assertIn(UP, sparkline(pd.Series([1.0, 2.0, 3.0]), 100, 30))
+        self.assertIn(DOWN, sparkline(pd.Series([3.0, 2.0, 1.0]), 100, 30))
 
     def test_too_short_series_draws_nothing(self):
         self.assertEqual(sparkline(pd.Series([1.0]), 100, 30), "")

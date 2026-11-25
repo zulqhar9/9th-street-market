@@ -5,15 +5,15 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-PRIMARY = "#0A84FF"   # accent blue
-MUTED = "#636366"     # benchmark grey
-GAIN = "#30D158"
-LOSS = "#FF453A"
+PRIMARY = "#64D2FF"   # accent blue
+MUTED = "#8E8E93"     # benchmark grey
+GAIN = "#32D74B"
+LOSS = "#FF9A92"
 STOCK = "#D1D1D6"     # individual stocks on scatter charts
 TEXT = "#F5F5F7"
-TEXT_2 = "#8E8E93"
-GRID = "#2C2C2E"
-CARD = "#1C1C1E"
+TEXT_2 = "#C4C4C9"
+GRID = "#5A5A60"
+CARD = "#4A4A4F"
 FONT = "-apple-system, BlinkMacSystemFont, Inter, Segoe UI, sans-serif"
 
 
@@ -23,7 +23,7 @@ def _layout(fig: go.Figure, height: int = 360, pct_y: bool = False) -> go.Figure
         legend=dict(orientation="h", y=1.1, x=0, font=dict(color=TEXT_2)),
         hovermode="x unified", paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         font=dict(family=FONT, size=13, color=TEXT),
-        hoverlabel=dict(bgcolor="#1C1C22", bordercolor="#3A3A40", font=dict(family=FONT, color=TEXT)),
+        hoverlabel=dict(bgcolor="#1C1C22", bordercolor="#66666C", font=dict(family=FONT, color=TEXT)),
     )
     fig.update_xaxes(showgrid=False, linecolor=GRID, tickfont=dict(color=TEXT_2))
     fig.update_yaxes(gridcolor=GRID, zeroline=False, linecolor=GRID, tickfont=dict(color=TEXT_2))
@@ -46,7 +46,7 @@ def change_bars(changes: pd.Series) -> go.Figure:
                            marker_color=[GAIN if v >= 0 else LOSS for v in s],
                            text=[f"{v:+.2%}" for v in s], textposition="outside",
                            hovertemplate="%{y}: %{x:+.2%}<extra></extra>"))
-    fig.update_xaxes(tickformat=".1%", zeroline=True, zerolinecolor="#3A3A40")
+    fig.update_xaxes(tickformat=".1%", zeroline=True, zerolinecolor="#66666C")
     fig.update_layout(hovermode="closest")
     return _layout(fig, height=380)
 
@@ -66,13 +66,13 @@ def growth(portfolio: pd.Series, benchmark: pd.Series, bench_name: str) -> go.Fi
         go.Scatter(x=portfolio.index, y=portfolio, name="Portfolio", line=dict(color=PRIMARY, width=2.5)),
         go.Scatter(x=bench.index, y=bench, name=bench_name, line=dict(color=MUTED, width=2)),
     ])
-    fig.add_hline(y=1, line_color="#3A3A40", line_width=1)
+    fig.add_hline(y=1, line_color="#66666C", line_width=1)
     fig.update_yaxes(title="Value of ₹1 invested", tickprefix="₹")
     return _layout(fig, height=400)
 
 
 def drawdown(dd: pd.Series) -> go.Figure:
-    fig = go.Figure(go.Scatter(x=dd.index, y=dd, fill="tozeroy", fillcolor="rgba(255,69,58,0.16)", line=dict(color=LOSS, width=1.5),
+    fig = go.Figure(go.Scatter(x=dd.index, y=dd, fill="tozeroy", fillcolor="rgba(255,154,146,0.16)", line=dict(color=LOSS, width=1.5),
                                name="Drawdown"))
     return _layout(fig, height=260, pct_y=True)
 
@@ -95,7 +95,7 @@ def risk_return(table: pd.DataFrame) -> go.Figure:
         x=table["volatility"], y=table["cagr"], mode="markers", text=table.index,
         marker=dict(color=[colors[k] for k in table["kind"]], size=[sizes[k] for k in table["kind"]]),
         hovertemplate="<b>%{text}</b><br>Risk %{x:.1%}<br>Return %{y:.1%} a year<extra></extra>"))
-    fig.add_hline(y=0, line_color="#3A3A40", line_width=1)
+    fig.add_hline(y=0, line_color="#66666C", line_width=1)
     fig.update_xaxes(title="Annual volatility (risk)", tickformat=".0%")
     fig.update_yaxes(title="Annual return (CAGR)", tickformat=".0%")
     fig.update_layout(hovermode="closest")
@@ -123,7 +123,7 @@ def stock_chart(ohlc: pd.DataFrame, candles: bool, intraday: bool) -> go.Figure:
         color = GAIN if up else LOSS
         trace = go.Scatter(x=ohlc.index, y=ohlc["Close"], mode="lines", name="Price",
                            line=dict(color=color, width=2), fill="tozeroy",
-                           fillcolor="rgba(48,209,88,0.08)" if up else "rgba(255,69,58,0.08)",
+                           fillcolor="rgba(50,215,75,0.08)" if up else "rgba(255,154,146,0.08)",
                            hovertemplate="₹%{y:,.2f}<extra></extra>")
     fig = go.Figure(trace)
     lo, hi = ohlc["Low"].min(), ohlc["High"].max()
@@ -157,10 +157,10 @@ def sip_growth(yearly: pd.DataFrame) -> go.Figure:
     gains = (yearly["value"] - yearly["invested"]) / 1e5
     fig = go.Figure([
         go.Scatter(x=yearly["year"], y=invested, name="Invested", stackgroup="one",
-                   line=dict(color="#636366", width=0), fillcolor="rgba(142,142,147,0.45)",
+                   line=dict(color="#C4C4C9", width=0), fillcolor="rgba(199,199,204,0.40)",
                    hovertemplate="Year %{x}: ₹%{y:.2f} lakh invested<extra></extra>"),
         go.Scatter(x=yearly["year"], y=gains, name="Growth", stackgroup="one",
-                   line=dict(color=PRIMARY, width=0), fillcolor="rgba(10,132,255,0.55)",
+                   line=dict(color=PRIMARY, width=0), fillcolor="rgba(100,210,255,0.55)",
                    hovertemplate="Year %{x}: ₹%{y:.2f} lakh growth<extra></extra>"),
     ])
     fig.update_xaxes(title="Year", dtick=1 if len(yearly) <= 15 else 5)

@@ -8,8 +8,8 @@ from html import escape
 
 import pandas as pd
 
-UP, DOWN, FLAT = "#30D158", "#FF453A", "#8E8E93"
-TEXT, MUTED, CARD, RING_BG = "#F5F5F7", "#8E8E93", "#1C1C1E", "#3A1714"
+UP, DOWN, FLAT = "#32D74B", "#FF9A92", "#C4C4C9"
+TEXT, MUTED, CARD, RING_BG = "#F5F5F7", "#C4C4C9", "#4A4A4F", "#6B3B3B"
 
 
 def indian(x: float, decimals: int = 0) -> str:
@@ -71,19 +71,20 @@ CSS = """
 <style>
 .wb { container-type: inline-size; margin: 0.25rem 0 0.5rem; }
 .wb-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.wb-tile { background: #1C1C1E; border-radius: 22px; padding: 16px 18px; min-width: 0;
+.wb-tile { background: #4A4A4F; border-radius: 22px; padding: 16px 18px; min-width: 0;
            display: flex; flex-direction: column; justify-content: space-between; min-height: 118px; }
 .wb-big { grid-column: span 2; grid-row: span 2; min-height: 248px; }
-.wb-label { color: #8E8E93; font-size: 0.85rem; font-weight: 500; display: flex; justify-content: space-between;
+.wb-label { color: #C4C4C9; font-size: 0.85rem; font-weight: 500; display: flex; justify-content: space-between;
             align-items: center; gap: 8px; }
 .wb-value { color: #F5F5F7; font-size: 1.55rem; font-weight: 600; letter-spacing: -0.02em; margin-top: 6px;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .wb-big .wb-value { font-size: 2.6rem; margin-top: 4px; }
-.wb-change { font-size: 0.9rem; font-weight: 500; margin-top: 2px; white-space: nowrap; }
+.wb-change { font-size: 0.9rem; font-weight: 500; margin-top: 2px; white-space: nowrap; overflow: hidden;
+              text-overflow: ellipsis; }
 .wb-big .wb-change { font-size: 1.05rem; }
 .wb-spark { margin-top: 10px; }
 .wb-pill { font-size: 0.75rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
-.wb-foot { color: #8E8E93; font-size: 0.8rem; margin-top: 8px; }
+.wb-foot { color: #C4C4C9; font-size: 0.8rem; margin-top: 8px; }
 .wb-ring { display: flex; align-items: center; gap: 14px; }
 @container (max-width: 44rem) {
   .wb-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -98,7 +99,7 @@ def board(*, nifty: pd.Series, nifty_intraday: pd.Series, status: str, is_open: 
           gold_now: float, gold_prev: float, silver_now: float, silver_prev: float, usd_inr: float,
           up: int, total: int, top_symbol: str, top_name: str, top_change: float) -> str:
     """HTML for the whole board. Changes are fractions (0.0153 = +1.53%)."""
-    pill_bg, pill_fg = ("rgba(48,209,88,.16)", UP) if is_open else ("#2C2C2E", MUTED)
+    pill_bg, pill_fg = ("rgba(50,215,75,.16)", UP) if is_open else ("#5A5A60", MUTED)
     pill_text = "Open" if is_open else ("Holiday" if "holiday" in status else "Closed")
     g_chg, s_chg = gold_now / gold_prev - 1, silver_now / silver_prev - 1
 
@@ -142,22 +143,22 @@ LIST_CSS = """
 <style>
 .sl { columns: 2 24rem; column-gap: 28px; margin-top: 0.25rem; }
 .sl-row { break-inside: avoid; display: grid; grid-template-columns: minmax(0, 1fr) 76px 104px; align-items: center;
-          gap: 12px; padding: 11px 6px; border-bottom: 0.5px solid #2C2C2E; text-decoration: none !important;
+          gap: 12px; padding: 11px 6px; border-bottom: 0.5px solid #5A5A60; text-decoration: none !important;
           border-radius: 12px; transition: background 0.15s ease; }
-.sl-row:hover { background: #1C1C1E; }
+.sl-row:hover { background: #4A4A4F; }
 .sl-sym { color: #F5F5F7; font-size: 0.98rem; font-weight: 600; letter-spacing: -0.01em; }
-.sl-name { color: #8E8E93; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sl-name { color: #C4C4C9; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sl-price { color: #F5F5F7; font-size: 0.92rem; text-align: right; font-variant-numeric: tabular-nums; }
 .sl-pill { display: block; margin: 4px 0 0 auto; width: 78px; text-align: center; color: #000; font-size: 0.82rem;
            font-weight: 600; padding: 3px 0; border-radius: 7px; font-variant-numeric: tabular-nums; }
-.sl-sector { column-span: all; color: #8E8E93; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.05em;
+.sl-sector { column-span: all; color: #C4C4C9; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.05em;
              text-transform: uppercase; margin: 18px 6px 2px; }
 </style>
 """
 
 
 def _row(symbol: str, name: str, price: float, change_pct: float, intraday: pd.Series | None) -> str:
-    pill = UP if change_pct > 0 else DOWN if change_pct < 0 else "#636366"
+    pill = UP if change_pct > 0 else DOWN if change_pct < 0 else "#8E8E93"
     # Like Apple Stocks: the line takes the same colour as the day's change vs yesterday's close.
     spark = sparkline(intraday, 76, 30, colour=pill if change_pct else None) if intraday is not None else ""
     return (f'<a class="sl-row" href="stock?symbol={escape(symbol)}" target="_self">'

@@ -36,7 +36,7 @@ st.subheader("Skills this project uses")
 skills = ["Python", "SQL (SQLite, window functions)", "pandas", "Data visualisation (Plotly, matplotlib)",
           "Streamlit", "Financial analysis", "Unit testing", "Git and GitHub"]
 st.markdown(" ".join(
-    f'<span style="display:inline-block;background:#1C1C1E;color:#F5F5F7;border-radius:999px;'
+    f'<span style="display:inline-block;background:#4A4A4F;color:#F5F5F7;border-radius:999px;'
     f'padding:6px 14px;margin:0 6px 8px 0;font-size:0.9rem">{s}</span>' for s in skills),
     unsafe_allow_html=True)
 
