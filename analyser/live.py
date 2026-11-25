@@ -159,6 +159,16 @@ def _closes(tickers: list[str], **kwargs) -> pd.DataFrame:
     return close.to_frame(tickers[0]) if isinstance(close, pd.Series) else close
 
 
+def adjusted_closes(tickers: list[str], period: str) -> pd.DataFrame:
+    """Daily closes adjusted for dividends and splits, one column per ticker, for comparing returns."""
+    data = yf.download(tickers, period=period, interval="1d", auto_adjust=True, progress=False, threads=True)
+    if data.empty:
+        raise RuntimeError("Yahoo Finance returned no data. Try again in a minute.")
+    close = data["Close"]
+    close = close.to_frame(tickers[0]) if isinstance(close, pd.Series) else close
+    return close.dropna(how="all")
+
+
 def quotes(tickers: list[str]) -> pd.DataFrame:
     """Latest price and change vs the previous close, one row per ticker."""
     close = _closes(tickers, period="7d", interval="1d")

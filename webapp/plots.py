@@ -151,6 +151,38 @@ def value_lines(series: dict[str, pd.Series]) -> go.Figure:
     return _layout(fig, height=420)
 
 
+def compare_lines(series: dict[str, pd.Series]) -> go.Figure:
+    """Percentage change from the start of the period, one line per stock, all starting at 0%."""
+    palette = [PRIMARY, "#FF9F0A", "#BF5AF2", GAIN]
+    fig = go.Figure([
+        go.Scatter(x=s.index, y=s / s.iloc[0] - 1, mode="lines", name=name,
+                   line=dict(color=palette[i % 4], width=2),
+                   hovertemplate=f"{name}: %{{y:+.1%}}<extra></extra>")
+        for i, (name, s) in enumerate(series.items())
+    ])
+    fig.add_hline(y=0, line_color="#66666C", line_width=1)
+    fig.update_xaxes(rangebreaks=[dict(bounds=["sat", "mon"])])
+    return _layout(fig, height=420, pct_y=True)
+
+
+def sector_bars(changes: pd.Series) -> go.Figure:
+    """Horizontal bars, one per sector, green for up and red for down, best at the top."""
+    s = changes.dropna().sort_values()
+    span = max(abs(s.min()), abs(s.max()), 0.005)
+    inside = [abs(v) > 0.55 * span for v in s]  # long bars carry their label inside, so it never clips
+    fig = go.Figure(go.Bar(x=s, y=s.index, orientation="h",
+                           marker_color=[GAIN if v >= 0 else LOSS for v in s],
+                           text=[f"{v:+.2%}" for v in s], cliponaxis=False,
+                           textposition=["inside" if i else "outside" for i in inside],
+                           insidetextanchor="end",
+                           insidetextfont=dict(color="#1C1C22"), outsidetextfont=dict(color=TEXT),
+                           hovertemplate="%{y}: %{x:+.2%}<extra></extra>"))
+    fig.update_xaxes(tickformat=".1%", zeroline=True, zerolinecolor="#66666C", range=[-span * 1.3, span * 1.3])
+    fig = _layout(fig, height=max(300, 30 * len(s) + 60))
+    fig.update_layout(hovermode="closest", showlegend=False, uniformtext=dict(minsize=11, mode="show"))
+    return fig
+
+
 def sip_growth(yearly: pd.DataFrame) -> go.Figure:
     """Stacked area: money put in (grey) and the growth on top (blue), year by year, in lakhs."""
     invested = yearly["invested"] / 1e5

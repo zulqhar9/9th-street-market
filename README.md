@@ -10,12 +10,15 @@ A Python + SQL project: a live market website for Indian equities, plus a portfo
 
 | Page | What it does |
 |---|---|
-| **Market Dashboard** | Live NIFTY 50: a sector heatmap (tile size = company value, colour = today's move), a sortable table of all 50 stocks with intraday sparklines, gold (₹ per 10 g) and silver (₹ per kg), and market news. Shows when the market is open, closed or on an exchange holiday. |
+| **Market Dashboard** | Live NIFTY 50: a widget board (index, gold ₹ per 10 g, silver ₹ per kg, market breadth, top mover), a sortable list of all 50 stocks with intraday sparklines, and market news. Shows when the market is open, closed or on an exchange holiday. |
+| **Compare Stocks** | Up to four NSE stocks (or the NIFTY 50) on one chart from the same starting point, with a side-by-side table of return, yearly return, volatility, worst fall, 52-week range, P/E and market value. |
+| **Sectors** | NIFTY 50 sectors ranked by their move today, this week, month, quarter or year, weighted by company value, with each sector's best and worst stock. |
 | **Stock Lookup** | Search all ~2,600 NSE-listed companies. Each stock gets an interactive chart (1D, 1W, 1M, 6M, 1Y, 5Y; line or candlesticks), price, market value, P/E ratio, 52-week position and its own news. Shareable links like `/stock?symbol=TCS`. |
 | **What If I Invested?** | Pick an amount, a start date and up to four investments (any NSE stock, the NIFTY 50, gold or silver) and see what they'd be worth today, with growth, annual return and worst fall. |
 | **Portfolio Analyser** | Edit a holdings table and see return vs the NIFTY 50, volatility, drawdown, Sharpe ratio, beta, allocation and correlation. |
 | **Stock Screener** | Filter the NIFTY 50 by sector, P/E ratio and 52-week position, or use quick screens like "near 52-week low" or "up today". |
 | **SIP Calculator** | What a monthly investment grows to, with an optional yearly step-up, shown as invested vs growth over time. |
+| **Capital Gains Tax** | Short- or long-term capital gains tax on a share sale under current Indian rules (20% / 12.5%, ₹1.25 lakh exemption, 4% cess, pre-2018 grandfathering), plus how much waiting for long-term treatment would save. |
 | **Learn** | Plain-English guides to P/E, CAGR, drawdown, the Sharpe ratio, beta and compounding, each with a try-it example. |
 | **About** | Who built the site, the skills it uses, and how it works. |
 
@@ -23,7 +26,7 @@ A Python + SQL project: a live market website for Indian equities, plus a portfo
 |---|---|---|
 | NIFTY 50 stocks and index | every 60 s | Yahoo Finance, about 15 min delayed |
 | Gold, silver, US$/₹ | every 60 s (cached 5 min) | International COMEX prices; Indian retail prices add duty and GST |
-| Company values (heatmap sizes) | every 6 h | |
+| Company values (sector weights, news) | every 6 h | |
 | News | every 30 min | Headlines only, linked to the source |
 
 Stock lists come from NSE's public archives and are refreshed with `python scripts/update_stock_lists.py`.
