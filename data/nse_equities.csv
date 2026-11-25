@@ -294,7 +294,7 @@ BAJFINANCE,Bajaj Finance Limited,EQ
 BALAJEE,Shree Tirupati Balajee Agro Trading Company Limited,EQ
 BALAJITELE,Balaji Telefilms Limited,EQ
 BALAMINES,Balaji Amines Limited,EQ
-BALAXI,BALAXI PHARMACEUTICALS LIMITED,EQ
+BALAXI,BALAXI PHARMACEUTICALS LIMITED,BE
 BALKRISHNA,Balkrishna Paper Mills Limited,EQ
 BALKRISIND,Balkrishna Industries Limited,EQ
 BALMLAWRIE,Balmer Lawrie & Company Limited,EQ
@@ -343,7 +343,6 @@ BESTAGRO,Best Agrolife Limited,EQ
 BETA,Beta Drugs Limited,EQ
 BFINVEST,BF Investment Limited,EQ
 BFUTILITIE,BF Utilities Limited,EQ
-BGLOBAL,Bharatiya Global Infomedia Limited,BZ
 BGRENERGY,BGR Energy Systems Limited,BE
 BHAGCHEM,Bhagiradha Chemicals & Industries Limited,EQ
 BHAGERIA,Bhageria Industries Limited,EQ
@@ -465,7 +464,6 @@ CENTRUM,Centrum Capital Limited,EQ
 CENTUM,Centum Electronics Limited,EQ
 CENTURYPLY,Century Plyboards (India) Limited,EQ
 CERA,Cera Sanitaryware Limited,EQ
-CEREBRAINT,Cerebra Integrated Technologies Limited,BZ
 CESC,CESC Limited,EQ
 CEWATER,Concord Enviro Systems Limited,EQ
 CFEL,Confidence Futuristic Energetech Limited,BE
@@ -490,12 +488,10 @@ CIFL,Capital India Finance Limited,EQ
 CINELINE,Cineline India Limited,EQ
 CINEVISTA,Cinevista Limited,EQ
 CIPLA,Cipla Limited,EQ
-CLCIND,CLC Industries Limited,BE
 CLEAN,Clean Science and Technology Limited,EQ
 CLEANMAX,Clean Max Enviro Energy Solutions Limited,EQ
 CLEDUCATE,CL Educate Limited,EQ
 CLSEL,Chaman Lal Setia Exports Limited,EQ
-CMICABLES,CMI Limited,BZ
 CMLL,Caliber Mining and Logistics Limited,EQ
 CMPDI,Central Mine Planning & Design Institute Limited,EQ
 CMRGREEN,CMR Green Technologies Limited,EQ
@@ -666,7 +662,6 @@ ECORECO,Eco Recycling Limited,EQ
 ECOSMOBLTY,Ecos (India) Mobility & Hospitality Limited,EQ
 EDELALTS,EAAA India Alternatives Limited,EQ
 EDELWEISS,Edelweiss Financial Services Limited,EQ
-EDUCOMP,Educomp Solutions Limited,BZ
 EFCIL,EFC (I) Limited,EQ
 EICHERMOT,Eicher Motors Limited,EQ
 EIDPARRY,EID Parry India Limited,EQ
@@ -1047,7 +1042,6 @@ IL&FSTRANS,IL&FS Transportation Networks Limited,BZ
 IMAGICAA,Imagicaaworld Entertainment Limited,EQ
 IMFA,Indian Metals & Ferro Alloys Limited,EQ
 IMPAL,India Motor Parts and Accessories Limited,EQ
-IMPEXFERRO,Impex Ferro Tech Limited,BZ
 INA,Insolation Energy Limited,EQ
 INCREDIBLE,INCREDIBLE INDUSTRIES LIMITED,EQ
 INDBANK,Indbank Merchant Banking Services Limited,EQ
@@ -1247,7 +1241,7 @@ KHAICHEM,Khaitan Chemicals & Fertilizers Limited,EQ
 KHAITANLTD,Khaitan (India) Limited,EQ
 KHANDSE,Khandwala Securities Limited,EQ
 KHAZANCHI,Khazanchi Jewellers Limited,EQ
-KICL,Kalyani Investment Company Limited,BE
+KICL,Kalyani Investment Company Limited,EQ
 KILITCH,Kilitch Drugs (India) Limited,EQ
 KIMS,Krishna Institute of Medical Sciences Limited,EQ
 KINGFA,Kingfa Science & Technology (India) Limited,EQ
@@ -1327,7 +1321,6 @@ LANCORHOL,Lancor Holdings Limited,BE
 LANDMARK,Landmark Cars Limited,EQ
 LANDSMILL,Landsmill Green Limited,BE
 LAOPALA,La Opala RG Limited,EQ
-LASA,Lasa Supergenerics Limited,BE
 LASERPOWER,Laser Power & Infra Limited,EQ
 LATENTVIEW,Latent View Analytics Limited,EQ
 LATTEYS,Latteys Industries Limited,EQ
@@ -1558,7 +1551,6 @@ MVGJL,Manoj Vaibhav Gems N Jewellers Limited,EQ
 MWL,Mangalam Worldwide Limited,EQ
 MYSORPETRO,Mysore Petro Chemicals Limited,BE
 NACLIND,NACL Industries Limited,EQ
-NAGAFERT,Nagarjuna Fertilizers and Chemicals Limited,BZ
 NAGREEKCAP,Nagreeka Capital & Infrastructure Limited,EQ
 NAGREEKEXP,Nagreeka Exports Limited,EQ
 NAHARCAP,Nahar Capital and Financial Services Limited,EQ
@@ -1663,6 +1655,7 @@ OIL,Oil India Limited,EQ
 OILCOUNTUB,Oil Country Tubular Limited,EQ
 OLAELEC,Ola Electric Mobility Limited,EQ
 OLECTRA,Olectra Greentech Limited,EQ
+OLIL,Oneclick Logistics India Limited,EQ
 OMAXAUTO,Omax Autos Limited,EQ
 OMAXE,Omaxe Limited,EQ
 OMFREIGHT,Om Freight Forwarders Limited,BE
@@ -1873,7 +1866,6 @@ RAJRATAN,Rajratan Global Wire Limited,EQ
 RAJRILTD,Raj Rayon Industries Limited,BE
 RAJSREESUG,Rajshree Sugars & Chemicals Limited,EQ
 RAJTV,Raj Television Network Limited,EQ
-RAJVIR,Rajvir Industries Limited,BZ
 RALLIS,Rallis India Limited,EQ
 RAMANEWS,Shree Rama Newsprint Limited,EQ
 RAMAPHO,Rama Phosphates Limited,EQ
@@ -2054,7 +2046,6 @@ SEDEMAC,SEDEMAC Mechatronics Limited,EQ
 SEIL,Shanti Educational Initiatives Limited,EQ
 SEJALLTD,Sejal Glass Limited,EQ
 SEKURITIND,Saint Gobain Sekurit India Limited,EQ
-SELMC,SEL Manufacturing Company Limited,BE
 SEMAC,Semac Construction Limited,EQ
 SENCO,Senco Gold Limited,EQ
 SENORES,Senores Pharmaceuticals Limited,EQ
@@ -2158,7 +2149,6 @@ SJS,S.J.S. Enterprises Limited,EQ
 SJVN,SJVN Limited,EQ
 SKFINDIA,SKF India Limited,EQ
 SKFINDUS,SKF India (Industrial) Limited,EQ
-SKIL,SKIL Infrastructure Limited,BZ
 SKIPPER,Skipper Limited,EQ
 SKMEGGPROD,SKM Egg Products Export (India) Limited,EQ
 SKYGOLD,SKY GOLD AND DIAMONDS LIMITED,EQ
@@ -2467,7 +2457,6 @@ UNITDSPR,United Spirits Limited,EQ
 UNITECH,Unitech Limited,EQ
 UNITEDPOLY,United Polyfab Gujarat Limited,EQ
 UNITEDTEA,The United Nilgiri Tea Estates Company Limited,EQ
-UNIVAFOODS,Univa Foods Limited,BE
 UNIVASTU,Univastu India Limited,BE
 UNIVCABLES,Universal Cables Limited,EQ
 UNIVPHOTO,Universus Photo Imagings Limited,BE

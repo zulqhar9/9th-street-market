@@ -53,8 +53,9 @@ def market_caps(tickers: list[str]) -> pd.Series:
     return pd.Series({t: c for t, c in caps.items() if c}, dtype=float)
 
 
-def history(ticker: str, period: str, interval: str, last_session: bool = False) -> pd.DataFrame:
-    """OHLC price history for one ticker (index in IST for intraday intervals).
+def history(ticker: str, period: str, interval: str, last_session: bool = False,
+            tz: ZoneInfo = IST) -> pd.DataFrame:
+    """OHLC price history for one ticker (intraday times in the exchange's time zone `tz`).
 
     last_session=True keeps only the most recent trading day, so a "today" chart still
     shows the last session on weekends and holidays.
@@ -63,7 +64,7 @@ def history(ticker: str, period: str, interval: str, last_session: bool = False)
     if df.empty:
         raise RuntimeError(f"No price history for {ticker}.")
     if interval.endswith("m"):
-        df.index = df.index.tz_convert(IST)
+        df.index = df.index.tz_convert(tz)
     if last_session:
         df = df[df.index.date == df.index[-1].date()]
     return df[["Open", "High", "Low", "Close", "Volume"]]

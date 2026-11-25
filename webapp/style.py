@@ -18,6 +18,8 @@ h1 { line-height: 1.08; }
     padding: 1.1rem 1.25rem;
 }
 [data-testid="stMetricLabel"] p { color: #C4C4C9; font-weight: 500; }
+/* Scale big numbers with the window so prices like ₹1,373.90 fit in four cards across */
+[data-testid="stMetricValue"] { font-size: clamp(1.4rem, 2vw, 2.25rem) !important; }
 
 /* Responsive columns: 4 across, then a 2x2 grid, then 1 per row (never an odd 3 + 1) */
 [data-testid="stHorizontalBlock"] { flex-wrap: wrap; row-gap: 1rem; container-type: inline-size; }

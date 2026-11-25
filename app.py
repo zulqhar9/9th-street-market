@@ -9,6 +9,7 @@ st.set_page_config(page_title="9th Street Market", page_icon="📈", layout="wid
 page = st.navigation({
     "Markets": [
         st.Page("webapp/dashboard.py", title="Market Dashboard", icon=":material/space_dashboard:", default=True),
+        st.Page("webapp/world_markets.py", title="World Markets", icon=":material/public:", url_path="world"),
         st.Page("webapp/stock.py", title="Stock Lookup", icon=":material/search:", url_path="stock"),
         st.Page("webapp/compare.py", title="Compare Stocks", icon=":material/compare_arrows:",
                 url_path="compare"),

@@ -157,19 +157,26 @@ LIST_CSS = """
 """
 
 
-def _row(symbol: str, name: str, price: float, change_pct: float, intraday: pd.Series | None) -> str:
+def money(x: float, currency: str = "₹", decimals: int = 2) -> str:
+    """₹ amounts use Indian grouping (1,08,155.00); $ amounts use international grouping (108,155.00)."""
+    return f"₹{indian(x, decimals)}" if currency == "₹" else f"{currency}{x:,.{decimals}f}"
+
+
+def _row(symbol: str, name: str, price: float, change_pct: float, intraday: pd.Series | None,
+         currency: str = "₹", link: str = "stock?symbol=") -> str:
     pill = UP if change_pct > 0 else DOWN if change_pct < 0 else "#8E8E93"
     # Like Apple Stocks: the line takes the same colour as the day's change vs yesterday's close.
     spark = sparkline(intraday, 76, 30, colour=pill if change_pct else None) if intraday is not None else ""
-    return (f'<a class="sl-row" href="stock?symbol={escape(symbol)}" target="_self">'
+    return (f'<a class="sl-row" href="{escape(link + symbol)}" target="_self">'
             f'<div style="min-width:0"><div class="sl-sym">{escape(symbol)}</div>'
             f'<div class="sl-name">{escape(name)}</div></div>'
             f'<div>{spark}</div>'
-            f'<div><div class="sl-price">₹{indian(price, 2)}</div>'
+            f'<div><div class="sl-price">{money(price, currency)}</div>'
             f'<span class="sl-pill" style="background:{pill}">{pct(change_pct)}</span></div></a>')
 
 
-def stock_list(stocks: pd.DataFrame, intraday: pd.DataFrame, order: str) -> str:
+def stock_list(stocks: pd.DataFrame, intraday: pd.DataFrame | dict, order: str, currency: str = "₹",
+               link: str = "stock?symbol=") -> str:
     """Apple Stocks-style list. `stocks` is indexed by ticker with symbol, short, industry, price, change_pct.
 
     order: "gainers", "losers", "az" or "sector" (sector adds small section headings).
@@ -189,5 +196,24 @@ def stock_list(stocks: pd.DataFrame, intraday: pd.DataFrame, order: str) -> str:
             current = r["industry"]
             parts.append(f'<div class="sl-sector">{escape(current)}</div>')
         series = intraday[ticker] if ticker in intraday else None
-        parts.append(_row(r["symbol"], r["short"], r["price"], r["change_pct"], series))
+        parts.append(_row(r["symbol"], r["short"], r["price"], r["change_pct"], series, currency, link))
     return LIST_CSS + '<div class="sl">' + "".join(parts) + "</div>"
+
+
+def index_board(tiles: list[dict]) -> str:
+    """Grid of index tiles. Each dict: name, place, price, change, change_pct, state, session (Series), foot."""
+    pills = {"open": ("rgba(50,215,75,.16)", UP), "lunch": ("rgba(255,214,10,.16)", "#FFD60A")}
+    parts = []
+    for t in tiles:
+        bg, fg = pills.get(t["state"], ("#5A5A60", MUTED))
+        colour = _colour(t["change"])
+        parts.append(f"""
+<div class="wb-tile">
+  <div class="wb-label"><span>{escape(t['name'])}</span>
+    <span class="wb-pill" style="background:{bg};color:{fg}">● {escape(t['label'])}</span></div>
+  <div><div class="wb-value">{t['price']:,.2f}</div>
+    <div class="wb-change" style="color:{colour}">{('+' if t['change'] > 0 else '−' if t['change'] < 0 else '')}{abs(t['change']):,.2f} · {pct(t['change_pct'])}</div></div>
+  <div class="wb-spark">{sparkline(t['session'], 200, 44, colour=colour) if t.get('session') is not None else ''}</div>
+  <div class="wb-foot" style="margin-top:4px">{escape(t['foot'])}</div>
+</div>""")
+    return CSS + '<div class="wb"><div class="wb-grid">' + "".join(parts) + "</div></div>"
