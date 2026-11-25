@@ -149,3 +149,22 @@ def value_lines(series: dict[str, pd.Series]) -> go.Figure:
     ])
     fig.update_yaxes(tickprefix="₹")
     return _layout(fig, height=420)
+
+
+def sip_growth(yearly: pd.DataFrame) -> go.Figure:
+    """Stacked area: money put in (grey) and the growth on top (blue), year by year, in lakhs."""
+    invested = yearly["invested"] / 1e5
+    gains = (yearly["value"] - yearly["invested"]) / 1e5
+    fig = go.Figure([
+        go.Scatter(x=yearly["year"], y=invested, name="Invested", stackgroup="one",
+                   line=dict(color="#636366", width=0), fillcolor="rgba(142,142,147,0.45)",
+                   hovertemplate="Year %{x}: ₹%{y:.2f} lakh invested<extra></extra>"),
+        go.Scatter(x=yearly["year"], y=gains, name="Growth", stackgroup="one",
+                   line=dict(color=PRIMARY, width=0), fillcolor="rgba(10,132,255,0.55)",
+                   hovertemplate="Year %{x}: ₹%{y:.2f} lakh growth<extra></extra>"),
+    ])
+    fig.update_xaxes(title="Year", dtick=1 if len(yearly) <= 15 else 5)
+    fig.update_yaxes(tickprefix="₹", ticksuffix=" L", title="Lakh rupees")
+    fig = _layout(fig, height=380)
+    fig.update_layout(margin=dict(l=8, r=24, t=28, b=8))  # room for the last year label
+    return fig

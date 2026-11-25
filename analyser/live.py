@@ -95,6 +95,24 @@ def stock_facts(ticker: str) -> dict:
     return facts
 
 
+def screener_data(tickers: list[str]) -> pd.DataFrame:
+    """Key numbers for many stocks at once (fetched in parallel): price, change, 52-week range,
+    position in that range (0 = at the low, 1 = at the high), market value and P/E."""
+    def one(t: str) -> dict:
+        try:
+            f = stock_facts(t)
+        except Exception:  # noqa: BLE001
+            return {"ticker": t}
+        return {"ticker": t, **f}
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        df = pd.DataFrame(list(pool.map(one, tickers))).set_index("ticker")
+    df["change_pct"] = df["price"] / df["prev_close"] - 1
+    span = df["year_high"] - df["year_low"]
+    df["pos52"] = ((df["price"] - df["year_low"]) / span).where(span > 0).clip(0, 1)
+    df["pe"] = pd.to_numeric(df["pe"], errors="coerce")
+    return df
+
+
 def inr_short(x: float | None) -> str:
     """Tight version for small cards: ₹18.28L cr, ₹4,520 cr, ₹95,000."""
     if x is None or pd.isna(x):

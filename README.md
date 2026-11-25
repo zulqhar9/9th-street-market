@@ -14,6 +14,10 @@ A Python + SQL project: a live market website for Indian equities, plus a portfo
 | **Stock Lookup** | Search all ~2,600 NSE-listed companies. Each stock gets an interactive chart (1D, 1W, 1M, 6M, 1Y, 5Y; line or candlesticks), price, market value, P/E ratio, 52-week position and its own news. Shareable links like `/stock?symbol=TCS`. |
 | **What If I Invested?** | Pick an amount, a start date and up to four investments (any NSE stock, the NIFTY 50, gold or silver) and see what they'd be worth today, with growth, annual return and worst fall. |
 | **Portfolio Analyser** | Edit a holdings table and see return vs the NIFTY 50, volatility, drawdown, Sharpe ratio, beta, allocation and correlation. |
+| **Stock Screener** | Filter the NIFTY 50 by sector, P/E ratio and 52-week position, or use quick screens like "near 52-week low" or "up today". |
+| **SIP Calculator** | What a monthly investment grows to, with an optional yearly step-up, shown as invested vs growth over time. |
+| **Learn** | Plain-English guides to P/E, CAGR, drawdown, the Sharpe ratio, beta and compounding, each with a try-it example. |
+| **About** | Who built the site, the skills it uses, and how it works. |
 
 | What | Refreshes | Note |
 |---|---|---|
@@ -67,6 +71,7 @@ Yahoo Finance ──► SQLite (prices) ──────────►sql/mon
 |---|---|
 | `app.py`, `webapp/` | The Streamlit website: dashboard page, portfolio page and Plotly charts |
 | `analyser/live.py` | Live quotes, intraday prices, market values, stock facts, gold/silver in rupees, news, NSE market hours and holidays |
+| `analyser/sip.py` | SIP maths: monthly instalments, yearly step-up, closed-form check |
 | `analyser/whatif.py` | "What if I invested" maths in rupees for stocks, the NIFTY 50, gold and silver |
 | `data/nifty50.csv`, `data/nse_equities.csv` | Official NSE lists of NIFTY 50 constituents (with sectors) and all listed equities |
 | `analyser/analysis.py` | One analysis pipeline shared by the website and the command-line report |
