@@ -1,5 +1,7 @@
 # 9th Street Market
 
+[![Tests](https://github.com/zulqhar9/9th-street-market/actions/workflows/tests.yml/badge.svg)](https://github.com/zulqhar9/9th-street-market/actions/workflows/tests.yml)
+
 **Live Indian and world market dashboard and investing tools**
 
 🔗 **Live demo: [9thstreetmarket.streamlit.app](https://9thstreetmarket.streamlit.app)**
