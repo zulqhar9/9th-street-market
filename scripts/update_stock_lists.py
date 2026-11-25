@@ -13,7 +13,7 @@ SOURCES = {
     "nifty50": "https://archives.nseindia.com/content/indices/ind_nifty50list.csv",
     "equities": "https://archives.nseindia.com/content/equities/EQUITY_L.csv",
 }
-HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; nain-capital-analytics/1.0)"}
+HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; 9th-street-market/1.0)"}
 
 
 def fetch(url: str) -> list[dict[str, str]]:

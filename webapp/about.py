@@ -4,13 +4,13 @@ import streamlit as st
 from webapp import style
 
 LINKEDIN = "https://www.linkedin.com/in/zulqhar9/"
-GITHUB = "https://github.com/zulqhar9/nain-capital-analytics"
+GITHUB = "https://github.com/zulqhar9/9th-street-market"
 
 style.header(
     "About",
     "Hi, I'm Zulqhar",
     "I'm a Master of IT student in Melbourne with a background in finance and business consulting. "
-    "I built Nain Capital Analytics to bring together two things I enjoy: Indian markets and working with data.",
+    "I built 9th Street Market to bring together two things I enjoy: Indian markets and working with data.",
 )
 
 c1, c2, _ = st.columns([1, 1, 2])
@@ -56,5 +56,5 @@ st.write("Graduate and junior roles in **data analytics, business analysis or pr
          "Melbourne, where business and technology meet. If you'd like to talk, the best way to reach me "
          "is on LinkedIn.")
 st.link_button("Connect on LinkedIn", LINKEDIN, type="primary", icon=":material/person_add:")
-st.caption("Nain Capital Analytics is a personal project for information and learning. Nothing on this site "
+st.caption("9th Street Market is a personal project for information and learning. Nothing on this site "
            "is investment advice.")

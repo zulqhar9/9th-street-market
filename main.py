@@ -1,4 +1,4 @@
-"""Nain Capital Analytics: portfolio risk and return analytics for Indian equities.
+"""9th Street Market: portfolio risk and return analytics for Indian equities.
 
 Usage:
     python main.py                      # download latest prices and build the report

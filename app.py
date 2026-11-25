@@ -1,10 +1,10 @@
-"""Nain Capital Analytics website.
+"""9th Street Market website.
 
 Run locally:  streamlit run app.py
 """
 import streamlit as st
 
-st.set_page_config(page_title="Nain Capital Analytics", page_icon="📈", layout="wide")
+st.set_page_config(page_title="9th Street Market", page_icon="📈", layout="wide")
 
 page = st.navigation({
     "Markets": [

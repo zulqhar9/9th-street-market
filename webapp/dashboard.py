@@ -41,7 +41,7 @@ def get_news(tickers: tuple[str, ...]) -> pd.DataFrame:
 
 style.header(
     "Live markets · India",
-    "Nain Capital Analytics",
+    "9th Street Market",
     "The NIFTY 50, gold and silver, and the latest market news, in one place. Prices from Yahoo Finance, "
     "delayed about 15 minutes. For information only, not investment advice.",
 )

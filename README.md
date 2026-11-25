@@ -1,8 +1,8 @@
-# Nain Capital Analytics
+# 9th Street Market
 
-**Live market dashboard and portfolio risk analytics for Indian equities**
+**Live Indian market dashboard and investing tools**
 
-🔗 **Live demo: [nain-capital-analytics.streamlit.app](https://nain-capital-analytics.streamlit.app)**
+🔗 **Live demo: [9thstreetmarket.streamlit.app](https://9thstreetmarket.streamlit.app)**
 
 A Python + SQL project: a live market website for Indian equities, plus a portfolio risk analyser that also runs as a command-line report.
 
