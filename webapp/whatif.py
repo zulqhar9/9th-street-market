@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from analyser import live, whatif
-from webapp import common, plots, style
+from webapp import common, plots, style, widgets
 
 EQUITIES = live.nse_equities()
 OPTIONS = list(whatif.SPECIAL) + EQUITIES["label"].tolist()
@@ -27,18 +27,36 @@ def display_name(label: str) -> str:
 style.header(
     "Investment calculator",
     "What if I had invested?",
-    "Pick an amount, a start date and up to four investments: any NSE stock, the NIFTY 50, gold or silver. "
+    "Pick an amount, a start date and up to four investments: any NSE stock, the NIFTY 50, gold, silver, "
+    "Bitcoin or Ethereum. "
     "See what the money would be worth today. Based on past prices only, not investment advice.",
 )
 
+def from_link() -> tuple[int, date, list[str]]:
+    """Read a shared scenario from the link, e.g. ?amount=70000&from=2016-12-01&compare=Bitcoin,Gold."""
+    q = st.query_params
+    amount, start = 10_000, date.today() - timedelta(days=5 * 365)
+    try:
+        amount = min(max(int(q.get("amount", amount)), 1_000), 10_00_00_000)
+    except ValueError:
+        pass
+    try:
+        start = min(max(date.fromisoformat(q.get("from", "")), date(2005, 1, 1)), date.today() - timedelta(days=7))
+    except ValueError:
+        pass
+    named = [n.strip() for n in q.get("compare", "").split(",") if n.strip() in OPTIONS][:4]
+    return amount, start, named or [d for d in DEFAULTS if d in OPTIONS]
+
+
+link_amount, link_start, link_picks = from_link()
 c1, c2 = st.columns(2)
-amount = c1.number_input("Amount invested (₹)", min_value=1_000, max_value=10_00_00_000, value=10_000,
+amount = c1.number_input("Amount invested (₹)", min_value=1_000, max_value=10_00_00_000, value=link_amount,
                          step=1_000, format="%d")
-start = c2.date_input("Invested on", value=date.today() - timedelta(days=5 * 365),
+start = c2.date_input("Invested on", value=link_start,
                       min_value=date(2005, 1, 1), max_value=date.today() - timedelta(days=7),
                       format="DD/MM/YYYY")
-picks = st.multiselect("Compare up to four", OPTIONS, default=[d for d in DEFAULTS if d in OPTIONS],
-                       max_selections=4, placeholder="Search for a stock, or pick NIFTY 50, Gold or Silver")
+picks = st.multiselect("Compare up to four", OPTIONS, default=link_picks, max_selections=4,
+                       placeholder="Search for a stock, or pick NIFTY 50, Gold, Silver, Bitcoin or Ethereum")
 if not picks:
     st.info("Pick at least one investment to compare.")
     st.stop()
@@ -56,14 +74,19 @@ if failed:
                "try a more recent start date.")
 if not outcomes:
     st.stop()
+late = [f"{o.name} (from {o.value.index[0]:%d %b %Y})" for o in outcomes
+        if o.value.index[0].date() > start + timedelta(days=10)]
+if late:
+    st.info(f"Price history starts later than your date for {', '.join(late)}, so "
+            f"{'it is' if len(late) == 1 else 'they are'} counted from then.")
 
 best = max(outcomes, key=lambda o: o.final)
-st.markdown(f"### ₹{amount:,.0f} in {best.name} on {start:%d %b %Y} would be worth "
-            f"**₹{best.final:,.0f}** today")
+st.markdown(f"### ₹{widgets.indian(amount)} in {best.name} on {start:%d %b %Y} would be worth "
+            f"**₹{widgets.indian(best.final)}** today")
 
 cols = st.columns(len(outcomes))
 for col, o in zip(cols, sorted(outcomes, key=lambda o: -o.final)):
-    col.metric(o.name, f"₹{o.final:,.0f}", f"{o.total_return:+.1%}", border=True,
+    col.metric(o.name, f"₹{widgets.indian(o.final)}", f"{o.total_return:+.1%}", border=True,
                help=f"{o.cagr:+.1%} a year · worst fall along the way {o.worst_fall:.1%}")
 
 st.plotly_chart(plots.value_lines({o.name: o.value for o in outcomes}), use_container_width=True,
@@ -82,5 +105,6 @@ st.dataframe(
         "Worst fall": st.column_config.NumberColumn(format="%.1f%%", help="Largest drop from a previous high"),
     })
 st.caption("Stocks use prices adjusted for dividends and splits, so returns include dividends reinvested. "
-           "Gold and silver are international prices in rupees, before Indian duty and GST. Taxes and fees "
-           "are ignored. Past returns don't predict future ones.")
+           "Gold and silver are international prices in rupees, before Indian duty and GST. Bitcoin and "
+           "Ethereum are global prices converted at each day's exchange rate; Indian exchanges have sometimes "
+           "traded at a premium. Taxes and fees are ignored. Past returns don't predict future ones.")

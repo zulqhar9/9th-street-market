@@ -10,7 +10,10 @@ from analyser import metrics
 from analyser.live import GOLD, GRAMS_PER_TROY_OUNCE, NIFTY, SILVER, USD_INR
 
 # Assets that aren't single NSE stocks: display name -> how to price them.
-SPECIAL = {"NIFTY 50": NIFTY, "Gold": GOLD, "Silver": SILVER}
+BITCOIN, ETHEREUM = "BTC-USD", "ETH-USD"
+SPECIAL = {"NIFTY 50": NIFTY, "Gold": GOLD, "Silver": SILVER, "Bitcoin": BITCOIN, "Ethereum": ETHEREUM}
+METALS = (GOLD, SILVER)        # US$ per troy ounce
+DOLLAR_PRICED = (BITCOIN, ETHEREUM)  # US$ per coin
 
 
 @dataclass
@@ -44,16 +47,29 @@ def grow(prices: pd.Series, amount: float) -> pd.Series:
     return amount * prices / prices.iloc[0]
 
 
+def to_rupees(close: pd.DataFrame, ticker: str) -> pd.Series:
+    """Turn a dollar-priced asset's closes into rupees using each day's exchange rate.
+
+    Gold and silver become rupees per gram; crypto becomes rupees per coin. Crypto also trades at
+    weekends when currency markets are shut, so the last known exchange rate is carried forward.
+    """
+    close = close.sort_index().ffill()
+    rupees = close[ticker] * close[USD_INR]
+    if ticker in METALS:
+        rupees = rupees / GRAMS_PER_TROY_OUNCE
+    return rupees.dropna()
+
+
 def rupee_prices(ticker: str, start: str) -> pd.Series:
     """Daily prices in rupees from `start`. Stocks use dividend-adjusted closes;
-    gold and silver are converted from US$ per ounce to rupees per gram."""
-    tickers = [ticker, USD_INR] if ticker in (GOLD, SILVER) else [ticker]
+    gold, silver and crypto are converted from US$ at each day's exchange rate."""
+    dollar_priced = ticker in METALS or ticker in DOLLAR_PRICED
+    tickers = [ticker, USD_INR] if dollar_priced else [ticker]
     close = yf.download(tickers, start=start, auto_adjust=True, progress=False)["Close"]
     if isinstance(close, pd.Series):
         close = close.to_frame(ticker)
     if ticker not in close or close[ticker].dropna().empty:
         raise ValueError(f"No prices found for {ticker} from {start}.")
-    if ticker in (GOLD, SILVER):
-        close = close.ffill()
-        return (close[ticker] * close[USD_INR] / GRAMS_PER_TROY_OUNCE).dropna()
+    if dollar_priced:
+        return to_rupees(close, ticker)
     return close[ticker].dropna()

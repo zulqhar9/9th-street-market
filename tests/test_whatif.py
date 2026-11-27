@@ -24,6 +24,14 @@ class WhatIfTests(unittest.TestCase):
         self.assertAlmostEqual(o.worst_fall, -0.2)
         self.assertAlmostEqual(o.cagr, 2.0, places=1)
 
+    def test_crypto_converts_per_coin_and_fills_weekend_rates(self):
+        from analyser.whatif import BITCOIN, GOLD, USD_INR, to_rupees
+        days = pd.to_datetime(["2026-11-20", "2026-11-21", "2026-11-22"])  # Fri, Sat, Sun
+        close = pd.DataFrame({BITCOIN: [60_000.0, 61_000.0, 62_000.0], USD_INR: [90.0, None, None]}, index=days)
+        self.assertEqual(list(to_rupees(close, BITCOIN)), [5_400_000.0, 5_490_000.0, 5_580_000.0])
+        gold = pd.DataFrame({GOLD: [3110.35], USD_INR: [100.0]}, index=days[:1])
+        self.assertAlmostEqual(to_rupees(gold, GOLD).iloc[0], 10_000.0, places=0)  # ₹ per gram
+
     def test_grow_rejects_empty_prices(self):
         with self.assertRaises(ValueError):
             grow(pd.Series(dtype=float), 1000)
