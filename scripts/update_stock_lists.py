@@ -7,6 +7,7 @@ other US exchanges). Run occasionally (the NIFTY 50 is rebalanced twice a year):
 import csv
 import io
 import re
+import sys
 import urllib.request
 from pathlib import Path
 
@@ -16,6 +17,7 @@ SOURCES = {
     "equities": "https://archives.nseindia.com/content/equities/EQUITY_L.csv",
     "nasdaq": "https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt",
     "other_us": "https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt",
+    "amfi": "https://portal.amfiindia.com/spages/NAVAll.txt",
 }
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; 9th-street-market/1.0)"}
 US_EXCHANGES = {"N": "NYSE", "A": "NYSE American", "P": "NYSE Arca", "Z": "Cboe", "V": "IEX"}
@@ -84,6 +86,12 @@ def main() -> None:
           sorted([[r["SYMBOL"], r["NAME OF COMPANY"], r["SERIES"]] for r in equities]))
 
     write(DATA / "us_equities.csv", ["symbol", "name", "exchange"], us_equities())
+
+    sys.path.insert(0, str(DATA.parent))
+    from analyser.mutual_funds import parse_navall
+    mf = parse_navall(download(SOURCES["amfi"])).sort_values(["group", "category", "name"])
+    write(DATA / "mutual_funds.csv", ["code", "name", "amc", "group", "category", "plan"],
+          mf[["code", "name", "amc", "group", "category", "plan"]].values.tolist())
 
 
 if __name__ == "__main__":

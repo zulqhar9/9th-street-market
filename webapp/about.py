@@ -18,7 +18,7 @@ c1.link_button("LinkedIn", LINKEDIN, icon=":material/person:", use_container_wid
 c2.link_button("Code on GitHub", GITHUB, icon=":material/code:", use_container_width=True)
 
 st.subheader("Why I built this")
-st.write("I've followed financial markets since 2017 and invested in Indian stocks since 2019. I wanted a "
+st.write("I've followed financial markets since 2016 and invested in Indian stocks since 2019. I wanted a "
          "clear, honest way to answer questions like *did my portfolio actually beat the market?* and *how "
          "much risk did it take?*, without spreadsheets or paid tools. This site is the result: live market "
          "data, a stock screener, calculators, and a portfolio analyser, all built from scratch.")

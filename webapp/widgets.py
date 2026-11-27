@@ -211,8 +211,8 @@ def index_board(tiles: list[dict]) -> str:
 <div class="wb-tile">
   <div class="wb-label"><span>{escape(t['name'])}</span>
     <span class="wb-pill" style="background:{bg};color:{fg}">● {escape(t['label'])}</span></div>
-  <div><div class="wb-value">{t['price']:,.2f}</div>
-    <div class="wb-change" style="color:{colour}">{('+' if t['change'] > 0 else '−' if t['change'] < 0 else '')}{abs(t['change']):,.2f} · {pct(t['change_pct'])}</div></div>
+  <div><div class="wb-value">{escape(t.get('price_text') or f"{t['price']:,.2f}")}</div>
+    <div class="wb-change" style="color:{colour}">{escape(t.get('change_text') or ('+' if t['change'] > 0 else '−' if t['change'] < 0 else '') + f"{abs(t['change']):,.2f} · ")}{pct(t['change_pct'])}</div></div>
   <div class="wb-spark">{sparkline(t['session'], 200, 44, colour=colour) if t.get('session') is not None else ''}</div>
   <div class="wb-foot" style="margin-top:4px">{escape(t['foot'])}</div>
 </div>""")

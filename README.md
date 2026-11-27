@@ -14,12 +14,14 @@ A Python + SQL project: a live market website for Indian equities, with world in
 |---|---|
 | **Market Dashboard** | Live NIFTY 50: a widget board (index, gold ₹ per 10 g, silver ₹ per kg, market breadth, top mover), a sortable list of all 50 stocks with intraday sparklines, and market news. Shows when the market is open, closed or on an exchange holiday. |
 | **World Markets** | Eight global indices (S&P 500, Nasdaq, Dow, FTSE 100, DAX, Nikkei 225, Hang Seng, ASX 200) with open/closed/lunch/holiday status in each exchange's own time zone, the biggest US stocks priced in dollars or rupees, and every market's trading hours in IST (adjusting for daylight saving). |
+| **Crypto** | Bitcoin, Ethereum and six more of the biggest coins in rupees or dollars, with true 24-hour changes (crypto never closes), charts from 1 day to 5 years converted at each day's exchange rate, and India's crypto tax rules in brief. |
 | **Compare Stocks** | Up to four Indian or US stocks (or the NIFTY 50 / S&P 500) on one chart from the same starting point, e.g. TCS vs Infosys vs Accenture. US returns can include the rupee's move against the dollar. Side-by-side table of return, yearly return, volatility, worst fall, 52-week range, P/E and market value. |
 | **Sectors** | NIFTY 50 sectors ranked by their move today, this week, month, quarter or year, weighted by company value, with each sector's best and worst stock. |
 | **Stock Lookup** | Search all ~2,600 NSE-listed companies and ~5,900 US-listed stocks. Each stock gets an interactive chart (1D, 1W, 1M, 6M, 1Y, 5Y; line or candlesticks), price, market value, P/E ratio, 52-week position and its own news; US stocks also show the rupee cost of one share. Shareable links like `/stock?symbol=TCS` or `/stock?us=AAPL`. |
 | **What If I Invested?** | Pick an amount, a start date and up to four investments (any NSE stock, the NIFTY 50, gold or silver) and see what they'd be worth today, with growth, annual return and worst fall. |
 | **Portfolio Analyser** | Edit a holdings table and see return vs the NIFTY 50, volatility, drawdown, Sharpe ratio, beta, allocation and correlation. |
-| **Stock Screener** | Filter the NIFTY 50 by sector, P/E ratio and 52-week position, or use quick screens like "near 52-week low" or "up today". |
+| **Stock Screener** | Filter the NIFTY 50 by sector, P/E ratio and 52-week position, or use quick screens like "near 52-week low" or "up today". Prices come from one batch download and slow-changing figures are cached for 12 hours, with a background thread keeping both warm so the page opens instantly. |
+| **Mutual Funds** | Search ~3,600 Indian mutual funds (Direct or Regular, by type and category), compare up to three against the NIFTY 50, see 6-month to 10-year returns, and backtest a monthly SIP on real NAVs with its XIRR. |
 | **SIP Calculator** | What a monthly investment grows to, with an optional yearly step-up, shown as invested vs growth over time. |
 | **Capital Gains Tax** | Short- or long-term capital gains tax on a share sale under current Indian rules (20% / 12.5%, ₹1.25 lakh exemption, 4% cess, pre-2018 grandfathering), plus how much waiting for long-term treatment would save. |
 | **Learn** | Plain-English guides to P/E, CAGR, drawdown, the Sharpe ratio, beta and compounding, each with a try-it example. |
@@ -32,7 +34,7 @@ A Python + SQL project: a live market website for Indian equities, with world in
 | Company values (sector weights, news) | every 6 h | |
 | News | every 30 min | Headlines only, linked to the source |
 
-Stock lists come from NSE's public archives and Nasdaq Trader's public symbol directory, and are refreshed with `python scripts/update_stock_lists.py`.
+Stock and fund lists come from NSE's public archives, Nasdaq Trader's public symbol directory and AMFI's daily NAV file (fund NAV history via mfapi.in), and are refreshed with `python scripts/update_stock_lists.py`.
 
 ![Growth of 1 rupee: portfolio vs NIFTY 50](reports/growth_vs_benchmark.png)
 
@@ -83,6 +85,9 @@ Yahoo Finance ──► SQLite (prices) ──────────►sql/mon
 | `analyser/tax.py` | Indian capital gains tax rules (short/long term, exemption, grandfathering, cess) |
 | `data/nifty50.csv`, `data/nse_equities.csv` | Official NSE lists of NIFTY 50 constituents (with sectors) and all listed equities |
 | `data/us_equities.csv` | US-listed common stocks and ADRs (ETFs, warrants, units and preferred shares filtered out) |
+| `analyser/mutual_funds.py`, `data/mutual_funds.csv` | AMFI fund list parsing (open-ended growth options, tidied categories), NAV history, trailing returns, SIP backtest with XIRR |
+| `analyser/crypto.py` | Top coins with true 24-hour changes |
+| `webapp/data.py` | Shared cached loaders and the background warm-up thread |
 | `analyser/analysis.py` | One analysis pipeline shared by the website and the command-line report |
 | `analyser/fetch.py` | Downloads split- and dividend-adjusted daily closes with `yfinance` |
 | `sql/schema.sql` | `prices` and `holdings` tables |

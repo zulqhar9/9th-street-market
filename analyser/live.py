@@ -96,21 +96,49 @@ def stock_facts(ticker: str) -> dict:
     return facts
 
 
-def screener_data(tickers: list[str]) -> pd.DataFrame:
-    """Key numbers for many stocks at once (fetched in parallel): price, change, 52-week range,
-    position in that range (0 = at the low, 1 = at the high), market value and P/E."""
-    def one(t: str) -> dict:
-        try:
-            f = stock_facts(t)
-        except Exception:  # noqa: BLE001
-            return {"ticker": t}
-        return {"ticker": t, **f}
-    with ThreadPoolExecutor(max_workers=8) as pool:
-        df = pd.DataFrame(list(pool.map(one, tickers))).set_index("ticker")
+def price_ranges(tickers: list[str]) -> pd.DataFrame:
+    """Price, change vs the previous close, and 52-week range for many stocks, from one batch download."""
+    data = yf.download(tickers, period="1y", interval="1d", auto_adjust=False, progress=False, threads=True)
+    if data.empty:
+        raise RuntimeError("Yahoo Finance returned no data. Try again in a minute.")
+    rows = []
+    for t in tickers:
+        if t not in data["Close"]:
+            continue
+        close = data["Close"][t].dropna()
+        if len(close) < 2:
+            continue
+        rows.append({"ticker": t, "price": float(close.iloc[-1]), "prev_close": float(close.iloc[-2]),
+                     "year_high": float(data["High"][t].max()), "year_low": float(data["Low"][t].min())})
+    df = pd.DataFrame(rows).set_index("ticker")
     df["change_pct"] = df["price"] / df["prev_close"] - 1
     span = df["year_high"] - df["year_low"]
     df["pos52"] = ((df["price"] - df["year_low"]) / span).where(span > 0).clip(0, 1)
-    df["pe"] = pd.to_numeric(df["pe"], errors="coerce")
+    return df
+
+
+def fundamentals(tickers: list[str]) -> pd.DataFrame:
+    """Market value (₹) and trailing P/E for many stocks, fetched in parallel. These change slowly."""
+    def one(t: str) -> dict:
+        try:
+            info = yf.Ticker(t).info or {}
+        except Exception:  # noqa: BLE001
+            return {"ticker": t}
+        return {"ticker": t, "market_cap": info.get("marketCap"), "pe": info.get("trailingPE")}
+
+    # Yahoo issues an access token ("crumb") on the first request; many threads asking for one at the
+    # same moment get "Invalid Crumb" errors. So: one request alone first, then the rest in parallel,
+    # then a gentler second pass for any that failed.
+    results = {t: one(t) for t in tickers[:1]}
+    with ThreadPoolExecutor(max_workers=12) as pool:
+        results.update({r["ticker"]: r for r in pool.map(one, tickers[1:])})
+    retry = [t for t, r in results.items() if r.get("market_cap") is None]
+    if retry:
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            results.update({r["ticker"]: r for r in pool.map(one, retry)})
+    df = pd.DataFrame(list(results.values())).set_index("ticker")
+    for col in ("market_cap", "pe"):
+        df[col] = pd.to_numeric(df.get(col), errors="coerce")
     return df
 
 

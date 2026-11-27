@@ -4,12 +4,16 @@ Run locally:  streamlit run app.py
 """
 import streamlit as st
 
+from webapp import data
+
 st.set_page_config(page_title="9th Street Market", page_icon="📈", layout="wide")
+data.start_warmup()  # load slow data in the background so pages like the screener open instantly
 
 page = st.navigation({
     "Markets": [
         st.Page("webapp/dashboard.py", title="Market Dashboard", icon=":material/space_dashboard:", default=True),
         st.Page("webapp/world_markets.py", title="World Markets", icon=":material/public:", url_path="world"),
+        st.Page("webapp/crypto.py", title="Crypto", icon=":material/currency_bitcoin:", url_path="crypto"),
         st.Page("webapp/stock.py", title="Stock Lookup", icon=":material/search:", url_path="stock"),
         st.Page("webapp/compare.py", title="Compare Stocks", icon=":material/compare_arrows:",
                 url_path="compare"),
@@ -17,6 +21,8 @@ page = st.navigation({
         st.Page("webapp/screener.py", title="Stock Screener", icon=":material/filter_list:", url_path="screener"),
     ],
     "Tools": [
+        st.Page("webapp/mutual_funds.py", title="Mutual Funds", icon=":material/account_balance:",
+                url_path="mutual-funds"),
         st.Page("webapp/sip.py", title="SIP Calculator", icon=":material/savings:", url_path="sip"),
         st.Page("webapp/tax.py", title="Capital Gains Tax", icon=":material/receipt_long:", url_path="tax"),
         st.Page("webapp/whatif.py", title="What If I Invested?", icon=":material/history:", url_path="what-if"),

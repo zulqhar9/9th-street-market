@@ -2,16 +2,14 @@
 import pandas as pd
 import streamlit as st
 
-from analyser import live
-from webapp import common, style
+from webapp import common, data as shared, style
 
-NIFTY50 = live.nifty50()
+NIFTY50 = shared.NIFTY50
 
 
-@st.cache_data(ttl=2 * 60 * 60, show_spinner=False)
 def get_data() -> pd.DataFrame:
-    df = live.screener_data(NIFTY50["ticker"].tolist())
-    return NIFTY50.set_index("ticker").join(df, how="left")
+    prices, funda = shared.screener_prices(), shared.screener_fundamentals()
+    return NIFTY50.set_index("ticker").join(prices, how="left").join(funda, how="left")
 
 
 style.header(
@@ -21,7 +19,7 @@ style.header(
     "or where the price sits in its 52-week range. For research only, not investment advice.",
 )
 
-with st.spinner("Loading numbers for all 50 stocks (first load takes about 20 seconds)..."):
+with st.spinner("Loading numbers for all 50 stocks..."):
     try:
         data = get_data()
     except Exception as err:  # noqa: BLE001
@@ -84,5 +82,6 @@ st.dataframe(
         "Details": st.column_config.LinkColumn("", display_text="Open ›", width="small"),
     },
 )
-st.caption("Sorted by company value. Click a column to re-sort. P/E and 52-week figures from Yahoo Finance, "
-           "refreshed every 2 hours; some companies (e.g. banks with unusual earnings) may show no P/E.")
+st.caption("Sorted by company value. Click a column to re-sort. Prices and 52-week ranges from Yahoo Finance, "
+           "refreshed every 15 minutes; P/E and company value every 12 hours. Some companies (e.g. banks with "
+           "unusual earnings) may show no P/E.")

@@ -113,10 +113,11 @@ def correlation(returns: pd.DataFrame) -> go.Figure:
 
 
 def stock_chart(ohlc: pd.DataFrame, candles: bool, intraday: bool, prefix: str = "₹",
-                session: tuple[float, float] = (9.25, 15.5)) -> go.Figure:
+                session: tuple[float, float] | None = (9.25, 15.5), decimals: int = 2) -> go.Figure:
     """Price chart for a stock page: candlesticks or a line coloured by the move over the period.
 
-    session is the exchange's trading hours in local hours (9.25 = 9:15 am), used to hide overnight gaps.
+    session is the exchange's trading hours in local hours (9.25 = 9:15 am), used to hide overnight
+    and weekend gaps. None for markets that never close, like crypto.
     """
     up = ohlc["Close"].iloc[-1] >= ohlc["Close"].iloc[0]
     if candles:
@@ -128,13 +129,15 @@ def stock_chart(ohlc: pd.DataFrame, candles: bool, intraday: bool, prefix: str =
         trace = go.Scatter(x=ohlc.index, y=ohlc["Close"], mode="lines", name="Price",
                            line=dict(color=color, width=2), fill="tozeroy",
                            fillcolor="rgba(50,215,75,0.08)" if up else "rgba(255,154,146,0.08)",
-                           hovertemplate=f"{prefix}%{{y:,.2f}}<extra></extra>")
+                           hovertemplate=f"{prefix}%{{y:,.{decimals}f}}<extra></extra>")
     fig = go.Figure(trace)
     lo, hi = ohlc["Low"].min(), ohlc["High"].max()
     pad = (hi - lo) * 0.08 or hi * 0.01
     fig.update_yaxes(range=[lo - pad, hi + pad], tickprefix=prefix)
     fig.update_xaxes(rangeslider_visible=False, tickformat="%H:%M" if intraday else None)
-    if intraday:  # hide overnight gaps in multi-day intraday charts
+    if session is None:
+        pass  # trades 24/7: nothing to hide
+    elif intraday:  # hide overnight gaps in multi-day intraday charts
         fig.update_xaxes(rangebreaks=[dict(bounds=[session[1], session[0]], pattern="hour"),
                                       dict(bounds=["sat", "mon"])])
     else:
